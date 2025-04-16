@@ -52,23 +52,48 @@ class _SignInState extends State<SignIn> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              TextField(
-                keyboardType: TextInputType.emailAddress,
-                controller: emailController,
-                decoration: InputDecoration(labelText: 'Email',
-                prefixIcon: Icon(Icons.person)
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [BoxShadow(
+                    color: Colors.black12,
+                    blurRadius:4,
+                    offset: Offset(0, 2), 
+                  )]
+                ),
+                child: TextField(
+                  keyboardType: TextInputType.emailAddress,
+                  controller: emailController,
+                  decoration: InputDecoration(labelText: 'Email',labelStyle: TextStyle(color: Colors.black,fontWeight: FontWeight.w600),border: OutlineInputBorder(borderRadius: BorderRadius.circular(12),borderSide: BorderSide.none),
+                  filled: true,
+                  fillColor: Colors.white,
+                  prefixIcon: Icon(Icons.person)
+                  ),
                 ),
               ),
               SizedBox(height: 12),
-              TextField(
-                keyboardType: TextInputType.visiblePassword,
-                controller: passwordController,
-                decoration: InputDecoration(labelText: 'Password',
-                suffixIcon: IconButton(onPressed: _togglePasswordVisibility, icon: Icon(
-                  obscureText?Icons.visibility:Icons.visibility_off)),
-                  prefixIcon: Icon(Icons.lock)
+              Container(decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [BoxShadow(
+                    color: Colors.black12,
+                    blurRadius:4,
+                    offset: Offset(0, 2), 
+                  )]
                 ),
-                obscureText: obscureText,
+                child: TextField(
+                  keyboardType: TextInputType.visiblePassword,
+                  controller: passwordController,
+                  decoration: InputDecoration(labelText: 'Password',labelStyle: TextStyle(color: Colors.black,fontWeight: FontWeight.w600),border: OutlineInputBorder(borderRadius: BorderRadius.circular(12),borderSide: BorderSide.none),
+                  suffixIcon: IconButton(onPressed: _togglePasswordVisibility, icon: Icon(
+                    obscureText?Icons.visibility:Icons.visibility_off)),
+                    filled: true,
+                  fillColor: Colors.white,
+                    prefixIcon: Icon(Icons.lock)
+                  ),
+                  obscureText: obscureText,
+                ),
               ),
               ElevatedButton(onPressed: (){}, child: Center(
                 child: Text("Sign In"),
