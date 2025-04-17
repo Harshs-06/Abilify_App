@@ -53,7 +53,7 @@ class _SignInState extends State<SignIn> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 300,
+                // width: 300,
     
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -129,10 +129,25 @@ class _SignInState extends State<SignIn> {
               ),
               SizedBox(height: 12),
               ElevatedButton(
-                onPressed: isButtonEnabled ? () {} : null,
+                onPressed: isButtonEnabled ? () {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Unable to fetch this email'),
+                    behavior: SnackBarBehavior.floating,
+                    showCloseIcon: true,
+                    )
+                  );
+                } : null,
+                // onPressed: () {
+                //   ScaffoldMessenger.of(context).showSnackBar(
+                //     const SnackBar(content: Text('Unable to fetch this email'),
+                //     behavior: SnackBarBehavior.floating,
+                //     showCloseIcon: true,
+                //     )
+                //   );
+                // },
                 style: ElevatedButton.styleFrom(
-                  minimumSize: Size(300, 50),
-                  maximumSize: Size(300, 50),
+                  minimumSize: Size(400, 50),
+                  maximumSize: Size(400, 50),
                   backgroundColor:
                       isButtonEnabled
                           ? Color.fromARGB(255, 255, 125, 89)
