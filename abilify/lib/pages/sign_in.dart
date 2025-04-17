@@ -134,6 +134,7 @@ class _SignInState extends State<SignIn> {
                     const SnackBar(content: Text('Unable to fetch this email'),
                     behavior: SnackBarBehavior.floating,
                     showCloseIcon: true,
+                    duration: Duration(seconds: 5),
                     )
                   );
                 } : null,
