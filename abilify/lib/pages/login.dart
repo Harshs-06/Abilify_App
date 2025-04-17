@@ -1,14 +1,14 @@
-import 'package:abilify/pages/login.dart';
+import 'package:abilify/pages/sign_in.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class SignIn extends StatefulWidget {
+class Login extends StatefulWidget {
   @override
-  _SignInState createState() => _SignInState();
+  _LoginState createState() => _LoginState();
 }
 
-class _SignInState extends State<SignIn> {
+class _LoginState extends State<Login> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   bool isButtonEnabled = false;
@@ -55,45 +55,10 @@ class _SignInState extends State<SignIn> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              
               Container(
                 // width: 300,
-    
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(7),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: TextField(
-                  keyboardType: TextInputType.name,
-                  // controller: emailController,
-                  controller: emailController,
-                  decoration: InputDecoration(
-                    labelText: 'UserName',
-                    labelStyle: GoogleFonts.poppins(
-                      color: Colors.black,
-                      fontWeight: FontWeight.w600,
-                      
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(7),
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: Colors.white,
-                    prefixIcon: Icon(Icons.person),
-                  ),
-                ),
-              ),
-              SizedBox(height: 12),
-              Container(
-                // width: 300,
-    
+
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(7),
@@ -200,7 +165,7 @@ class _SignInState extends State<SignIn> {
                   ),
                 ),
                 child:Center(child: Text(
-                  "SignUp",
+                  "LogIn",
                   style: GoogleFonts.poppins(fontSize: 20,fontWeight: FontWeight.w700),
                   ),
                 
@@ -214,17 +179,17 @@ class _SignInState extends State<SignIn> {
                 ),
                 children: [
                   TextSpan(
-                    text: 'Alread Registered? ',
+                    text: 'New User? ',
                     style: TextStyle(color: Colors.black),
                   ),
                   TextSpan(
-                    text: 'Login',
+                    text: 'SignUp',
                     style: TextStyle(color:Colors.blueAccent),
                     recognizer: TapGestureRecognizer()
                     ..onTap = (){
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => Login())
+                        MaterialPageRoute(builder: (context) => SignIn())
                       );
                     },
                   ),
