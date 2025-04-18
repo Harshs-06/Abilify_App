@@ -55,6 +55,7 @@ class _SignInState extends State<SignIn> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Image.asset("assets/abilify_logo.png"),
               Container(
                 // width: 300,
     
@@ -105,7 +106,7 @@ class _SignInState extends State<SignIn> {
                     ),
                   ],
                 ),
-                child: TextField(
+                child: TextField( 
                   keyboardType: TextInputType.emailAddress,
                   controller: emailController,
                   decoration: InputDecoration(
@@ -172,7 +173,7 @@ class _SignInState extends State<SignIn> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Unable to fetch this email'),
                     behavior: SnackBarBehavior.floating,
-                    showCloseIcon: true,
+                    showCloseIcon: false,
                     duration: Duration(seconds: 5),
                     )
                   );

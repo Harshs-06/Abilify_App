@@ -55,7 +55,7 @@ class _LoginState extends State<Login> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              
+              Image.asset("assets/abilify_logo.png"),
               Container(
                 // width: 300,
 
