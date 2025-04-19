@@ -127,6 +127,7 @@ class _SignInState extends State<SignIn> {
                   obscureText: obscureText,
                 ),
               ),
+              
               SizedBox(height: 12),
               ElevatedButton(
                 onPressed: isButtonEnabled ? () {} : null,
@@ -151,6 +152,8 @@ class _SignInState extends State<SignIn> {
                 
                 ),
               ),
+
+              
             ],
           ),
         ),
