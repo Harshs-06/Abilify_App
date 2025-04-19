@@ -1,3 +1,5 @@
+import 'package:abilify/pages/child_home_page.dart';
+import 'package:abilify/pages/continue_as.dart';
 import 'package:abilify/pages/login.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -170,22 +172,19 @@ class _SignInState extends State<SignIn> {
               SizedBox(height: 12),
               ElevatedButton(
                 onPressed: isButtonEnabled ? () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Unable to fetch this email'),
-                    behavior: SnackBarBehavior.floating,
-                    showCloseIcon: false,
-                    duration: Duration(seconds: 5),
-                    )
+                  Navigator.push(context, 
+                  MaterialPageRoute(
+                    builder: (context) => ChildHomePage()
+                  ),
                   );
+                  // ScaffoldMessenger.of(context).showSnackBar(
+                  //   const SnackBar(content: Text('Unable to fetch this email'),
+                  //   behavior: SnackBarBehavior.floating,
+                  //   showCloseIcon: false,
+                  //   duration: Duration(seconds: 5),
+                  //   )
+                  // );
                 } : null,
-                // onPressed: () {
-                //   ScaffoldMessenger.of(context).showSnackBar(
-                //     const SnackBar(content: Text('Unable to fetch this email'),
-                //     behavior: SnackBarBehavior.floating,
-                //     showCloseIcon: true,
-                //     )
-                //   );
-                // },
                 style: ElevatedButton.styleFrom(
                   minimumSize: Size(400, 50),
                   maximumSize: Size(400, 50),
