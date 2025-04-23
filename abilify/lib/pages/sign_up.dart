@@ -1,7 +1,14 @@
+import 'package:abilify/pages/child_home_page.dart';
+import 'package:abilify/pages/continue_as.dart';
+import 'package:abilify/pages/login.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+
 class SignIn extends StatefulWidget {
+  const SignIn({super.key});
+
   @override
   _SignInState createState() => _SignInState();
 }
@@ -9,8 +16,10 @@ class SignIn extends StatefulWidget {
 class _SignInState extends State<SignIn> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController usernameController = TextEditingController();
   bool isButtonEnabled = false;
   bool obscureText = true;
+
 
   void _togglePasswordVisibility() {
     if (passwordController.text.isNotEmpty) {
@@ -23,7 +32,7 @@ class _SignInState extends State<SignIn> {
   void _checkInput() {
     setState(() {
       isButtonEnabled =
-          emailController.text.isNotEmpty && passwordController.text.isNotEmpty;
+          emailController.text.isNotEmpty && passwordController.text.isNotEmpty&& usernameController.text.isNotEmpty;
     });
   }
 
@@ -52,8 +61,9 @@ class _SignInState extends State<SignIn> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              Image.asset("assets/abilify_logo.png"),
               Container(
-                width: 300,
+                // width: 300,
     
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -67,8 +77,8 @@ class _SignInState extends State<SignIn> {
                   ],
                 ),
                 child: TextField(
-                  keyboardType: TextInputType.emailAddress,
-                  controller: emailController,
+                  keyboardType: TextInputType.name,
+                  controller: usernameController,
                   decoration: InputDecoration(
                     labelText: 'UserName',
                     labelStyle: GoogleFonts.poppins(
@@ -83,6 +93,41 @@ class _SignInState extends State<SignIn> {
                     filled: true,
                     fillColor: Colors.white,
                     prefixIcon: Icon(Icons.person),
+                  ),
+                ),
+              ),
+              SizedBox(height: 12),
+              Container(
+                // width: 300,
+    
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(7),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black12,
+                      blurRadius: 4,
+                      offset: Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: TextField( 
+                  keyboardType: TextInputType.emailAddress,
+                  controller: emailController,
+                  decoration: InputDecoration(
+                    labelText: 'Email',
+                    labelStyle: GoogleFonts.poppins(
+                      color: Colors.black,
+                      fontWeight: FontWeight.w600,
+                      
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(7),
+                      borderSide: BorderSide.none,
+                    ),
+                    filled: true,
+                    fillColor: Colors.white,
+                    prefixIcon: Icon(Icons.email),
                   ),
                 ),
               ),
@@ -127,13 +172,25 @@ class _SignInState extends State<SignIn> {
                   obscureText: obscureText,
                 ),
               ),
-              
               SizedBox(height: 12),
               ElevatedButton(
-                onPressed: isButtonEnabled ? () {} : null,
+                onPressed: isButtonEnabled ? () {
+                  Navigator.push(context, 
+                  MaterialPageRoute(
+                    builder: (context) => ContinueAs()
+                  ),
+                  );
+                  // ScaffoldMessenger.of(context).showSnackBar(
+                  //   const SnackBar(content: Text('Unable to fetch this email'),
+                  //   behavior: SnackBarBehavior.floating,
+                  //   showCloseIcon: false,
+                  //   duration: Duration(seconds: 5),
+                  //   )
+                  // );
+                } : null,
                 style: ElevatedButton.styleFrom(
-                  minimumSize: Size(300, 50),
-                  maximumSize: Size(300, 50),
+                  minimumSize: Size(400, 50),
+                  maximumSize: Size(400, 50),
                   backgroundColor:
                       isButtonEnabled
                           ? Color.fromARGB(255, 255, 125, 89)
@@ -146,14 +203,37 @@ class _SignInState extends State<SignIn> {
                   ),
                 ),
                 child:Center(child: Text(
-                  "Sign In",
+                  "SignUp",
                   style: GoogleFonts.poppins(fontSize: 20,fontWeight: FontWeight.w700),
                   ),
                 
                 ),
               ),
-
-              
+              SizedBox(height: 12),
+              RichText(text: TextSpan(
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+                children: [
+                  TextSpan(
+                    text: 'Alread Registered? ',
+                    style: TextStyle(color: Colors.black),
+                  ),
+                  TextSpan(
+                    text: 'Login',
+                    style: TextStyle(color:Colors.blueAccent),
+                    recognizer: TapGestureRecognizer()
+                    ..onTap = (){
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => Login())
+                      );
+                    },
+                  ),
+                ],
+              ),
+              )
             ],
           ),
         ),
