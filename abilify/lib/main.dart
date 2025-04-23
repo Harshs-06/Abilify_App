@@ -1,5 +1,7 @@
+import 'package:abilify/pages/child_home_page.dart';
+import 'package:abilify/pages/continue_as.dart';
+import 'package:abilify/pages/daily_stars.dart';
 import 'package:flutter/material.dart';
-import 'package:abilify/pages/splash.dart';
 
 void main() {
   runApp(
@@ -16,9 +18,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      initialRoute: "/", 
+      initialRoute: "/",  
       routes: {
-        "/": (context) => SplashScreen(),
+        "/": (context) => ChildHomePage(),
         
       },
     );

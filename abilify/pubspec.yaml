@@ -37,6 +37,7 @@ dependencies:
   google_fonts: ^6.2.1
   lottie: ^2.7.0
   local_auth: ^2.1.7
+  percent_indicator: ^4.2.5
   intl: ^0.18.0
   flutter_native_splash: ^2.3.0
 

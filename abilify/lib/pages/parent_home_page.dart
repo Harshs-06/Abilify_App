@@ -192,7 +192,7 @@ class _Parent_hpage extends State<ParentHomePage> {
                                   ),
                                 ),
                               );
-                            }).toList(),
+                            }),
                         ],
                       ),
                     ),
@@ -310,6 +310,8 @@ class _Parent_hpage extends State<ParentHomePage> {
 }
 
 class ParentCommunityEvents extends StatefulWidget {
+  const ParentCommunityEvents({super.key});
+
   @override
   _Parent_epage createState() => _Parent_epage();
 }
@@ -334,7 +336,7 @@ class _Parent_epage extends State<ParentCommunityEvents> {
                   ),
                   child: Row(
                     children: [
-                      Container(
+                      SizedBox(
                         width: deviceWidth * 0.65,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
