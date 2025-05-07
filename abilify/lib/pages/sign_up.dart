@@ -2,7 +2,10 @@ import 'package:abilify/pages/continue_as.dart';
 import 'package:abilify/pages/login.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:abilify/pages/ChildSide/child_home_page.dart';
+import 'package:abilify/pages/ParentSide/parent_home_page.dart';
 import 'package:google_fonts/google_fonts.dart';
+
 
 
 class SignIn extends StatefulWidget {
@@ -176,7 +179,7 @@ class _SignInState extends State<SignIn> {
                 onPressed: isButtonEnabled ? () {
                   Navigator.push(context, 
                   MaterialPageRoute(
-                    builder: (context) => ContinueAs()
+                    builder: (context) => ChildHomePage()
                   ),
                   );
                   // ScaffoldMessenger.of(context).showSnackBar(

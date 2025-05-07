@@ -1,8 +1,12 @@
 import 'package:abilify/pages/sign_up.dart';
 import 'package:abilify/pages/continue_as.dart';
+import 'package:abilify/pages/ChildSide/child_home_page.dart';
+import 'package:abilify/pages/ParentSide/parent_home_page.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+
 import 'package:google_fonts/google_fonts.dart';
+
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -139,7 +143,7 @@ class _LoginState extends State<Login> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => ContinueAs(),
+                              builder: (context) => ParentHomePage(),
                             ),
                           );
                         }
