@@ -1,11 +1,14 @@
+import 'dart:io';
+import 'package:abilify/pages/ChildSide/activity.dart';
+import 'package:abilify/pages/ChildSide/creative_corner.dart';
+import 'package:abilify/pages/ChildSide/chat_along.dart';
 import 'package:abilify/pages/ChildSide/daily_stars.dart';
-import 'package:abilify/pages/ChildSide/story_time.dart';
-import 'package:abilify/pages/ChildSide/music_play.dart';
 import 'package:abilify/pages/ChildSide/child_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
+import 'package:abilify/services/user_data_provider.dart';
 
 class ChildHomePage extends StatefulWidget{
   const ChildHomePage({super.key});
@@ -22,6 +25,31 @@ class _ChildHomeState extends State<ChildHomePage>{
     'Daily Tasks',
     'Mind Relaxation'
   ];
+  
+  final UserDataProvider _userDataProvider = UserDataProvider();
+  late String childName;
+  late String profileImage;
+  late bool isAssetImage;
+  
+  @override
+  void initState() {
+    super.initState();
+    loadUserData();
+  }
+  
+  void loadUserData() {
+    childName = _userDataProvider.childName;
+    profileImage = _userDataProvider.profileImage;
+    isAssetImage = _userDataProvider.isAssetImage;
+  }
+  
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Reload data when returning to this screen
+    loadUserData();
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +95,15 @@ class _ChildHomeState extends State<ChildHomePage>{
                       children: [
                         GestureDetector(
                           onTap: () {
-                            Navigator.push(context, MaterialPageRoute(builder: (context) => ChildProfile()));
+                            Navigator.push(
+                              context, 
+                              MaterialPageRoute(builder: (context) => ChildProfile())
+                            ).then((_) {
+                              // Refresh user data when returning from profile
+                              setState(() {
+                                loadUserData();
+                              });
+                            });
                           },
                           child: Container(
                             padding: EdgeInsets.all(2),
@@ -87,7 +123,9 @@ class _ChildHomeState extends State<ChildHomePage>{
                             ),
                             child: CircleAvatar(
                               radius: 22,
-                              backgroundImage: AssetImage('assets/child_pf.png'),
+                              backgroundImage: isAssetImage 
+                                ? AssetImage(profileImage)
+                                : FileImage(File(profileImage)) as ImageProvider,
                             ),
                           ),
                         ),
@@ -147,7 +185,7 @@ class _ChildHomeState extends State<ChildHomePage>{
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Welcome Back,\nSuper Learner!',
+                                'Welcome Back,\n$childName!',
                                 style: GoogleFonts.poppins(
                                   color: Colors.black,
                                   fontWeight: FontWeight.w700,
@@ -220,25 +258,28 @@ class _ChildHomeState extends State<ChildHomePage>{
                     // First row of activity cards
                     Row(
                       children: [
-                        // Fun Games card
+                        // Activity card
                         Expanded(
                           child: ActivityCard(
-                            title: 'Fun Games',
+                            title: 'Activity',
                             color: Color.fromARGB(255, 255, 138, 71),
                             imagePath: "assets/fun_games.png",
-                            onTap: () {},
+                            onTap: () {
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => Activity()));
+                            },
                           ),
                         ),
                         SizedBox(width: 16),
-                        // Story Time card
+                        // Creative Corner card
                         Expanded(
                           child: ActivityCard(
-                            title: 'Story Time',
+                            title: 'Creative Corner',
                             color: Color.fromARGB(255, 77, 195, 255),
                             imagePath: "assets/story_time.png",
                             onTap: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => StoryTime()));
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => CreativeCorner()));
                             },
+                            compact: true,
                           ),
                         ),
                       ],
@@ -249,28 +290,28 @@ class _ChildHomeState extends State<ChildHomePage>{
                     // Second row of activity cards
                     Row(
                       children: [
-                        // Music Play card
+                        // Chat Along card
                         Expanded(
                           child: ActivityCard(
-                            title: 'Music Play',
+                            title: 'Chat Along',
                             color: Color.fromARGB(255, 255, 209, 103),
-                            useLottie: true,
-                            lottiePath: "assets/panda_dancing.json",
+                            imagePath: "assets/chat.png",
                             onTap: () {
-                              Navigator.push(context, MaterialPageRoute(builder: (context) => MusicPlay()));
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => ChatAlong()));
                             },
                           ),
                         ),
                         SizedBox(width: 16),
-                        // Chat Along card
+                        // Daily Stars card
                         Expanded(
                           child: ActivityCard(
                             title: 'Daily Stars',
                             color: Color.fromARGB(255, 167, 85, 247),
-                            imagePath: "assets/chat.png",
+                            imagePath: "assets/dailystars_image.png",
                             onTap: () {
                               Navigator.push(context, MaterialPageRoute(builder: (context) => DailyStars()));
                             },
+                            imageSize: 1.2,
                           ),
                         ),
                       ],
@@ -446,6 +487,8 @@ class ActivityCard extends StatelessWidget {
   final String? imagePath;
   final String? lottiePath;
   final bool useLottie;
+  final bool compact;
+  final double imageSize;
   final Function() onTap;
 
   const ActivityCard({
@@ -454,6 +497,8 @@ class ActivityCard extends StatelessWidget {
     this.imagePath,
     this.lottiePath,
     this.useLottie = false,
+    this.compact = false,
+    this.imageSize = 1.0,
     required this.onTap,
   });
 
@@ -499,12 +544,20 @@ class ActivityCard extends StatelessWidget {
                   child: Center(
                     child: useLottie 
                         ? Lottie.asset(lottiePath!)
-                        : Image.asset(imagePath!),
+                        : Image.asset(
+                            imagePath!,
+                            width: 90 * imageSize,
+                            height: 90 * imageSize,
+                            fit: BoxFit.contain,
+                          ),
                   ),
                 ),
                 SizedBox(height: 16),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: compact ? 8 : 12, 
+                    vertical: 6
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withOpacity(0.3),
                     borderRadius: BorderRadius.circular(20),
@@ -512,7 +565,7 @@ class ActivityCard extends StatelessWidget {
                   child: Text(
                     title,
                     style: GoogleFonts.poppins(
-                      fontSize: 16,
+                      fontSize: compact ? 14 : 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.white,
                     ),
