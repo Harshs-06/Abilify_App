@@ -7,6 +7,7 @@ import 'package:abilify/pages/login.dart';
 import 'package:abilify/pages/ChildSide/edit_profile.dart';
 import 'package:abilify/pages/ChildSide/notification_preferences.dart';
 import 'package:abilify/pages/ChildSide/parent_controls.dart';
+import 'package:abilify/services/user_data_provider.dart';
 
 class ChildProfile extends StatefulWidget {
   const ChildProfile({super.key});
@@ -16,10 +17,21 @@ class ChildProfile extends StatefulWidget {
 }
 
 class _ChildProfileState extends State<ChildProfile> {
-  String childName = 'Super Learner';
-  String childAge = '8';
-  String profileImage = 'assets/child_pf.png';
-  bool isAssetImage = true;
+  late String childName;
+  late String childAge;
+  late String profileImage;
+  late bool isAssetImage;
+  final UserDataProvider _userDataProvider = UserDataProvider();
+  
+  @override
+  void initState() {
+    super.initState();
+    // Get user data from provider
+    childName = _userDataProvider.childName;
+    childAge = _userDataProvider.childAge;
+    profileImage = _userDataProvider.profileImage;
+    isAssetImage = _userDataProvider.isAssetImage;
+  }
   
   @override
   Widget build(BuildContext context) {
@@ -295,11 +307,25 @@ class _ChildProfileState extends State<ChildProfile> {
                         
                         // Handle the result from EditProfile
                         if (result != null && result is Map<String, dynamic>) {
+                          final newName = result['name'];
+                          final newAge = result['age'];
+                          final newProfileImage = result['profileImage'];
+                          final newIsAssetImage = result['isAssetImage'];
+                          
+                          // Update user data provider
+                          await _userDataProvider.updateProfile(
+                            name: newName,
+                            age: newAge,
+                            image: newProfileImage,
+                            isAsset: newIsAssetImage,
+                          );
+                          
+                          // Update state
                           setState(() {
-                            childName = result['name'];
-                            childAge = result['age'];
-                            profileImage = result['profileImage'];
-                            isAssetImage = result['isAssetImage'];
+                            childName = newName;
+                            childAge = newAge;
+                            profileImage = newProfileImage;
+                            isAssetImage = newIsAssetImage;
                           });
                           
                           ScaffoldMessenger.of(context).showSnackBar(

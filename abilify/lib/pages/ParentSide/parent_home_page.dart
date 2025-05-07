@@ -4,6 +4,13 @@ import 'package:abilify/customs/upcoming_events_widget.dart';
 import 'package:abilify/customs/device_dimensions.dart';
 import 'package:abilify/customs/action_button_widget.dart';
 import 'package:abilify/customs/loading_screen.dart';
+import 'package:abilify/widgets/bottom_navigation.dart';
+
+// Add imports for other pages that will be accessed from navigation bar
+// Add these as needed based on your file structure
+// import 'package:abilify/pages/ParentSide/service_directory.dart';
+// import 'package:abilify/pages/ParentSide/community_forum.dart';
+// import 'package:abilify/pages/ParentSide/chats.dart';
 
 final String profile_img = "assets/profile_p2.png";
 
@@ -17,6 +24,7 @@ class ParentHomePage extends StatefulWidget {
 class _Parent_hpage extends State<ParentHomePage> {
   final String parent_name = "Palak";
   final String child_name = "Jai";
+  int _currentIndex = 0;
 
   Map<String, String> moodMap = {
     "assets/dailymood/smileunselec.png":
@@ -30,6 +38,27 @@ class _Parent_hpage extends State<ParentHomePage> {
   };
 
   String? selectedPath;
+
+  void _onTabTapped(int index) {
+    if (index != _currentIndex) {
+      setState(() {
+        _currentIndex = index;
+      });
+      
+      // Navigate to different pages based on tab index
+      switch (index) {
+        case 1:
+          Navigator.pushReplacementNamed(context, '/service_directory');
+          break;
+        case 2:
+          Navigator.pushReplacementNamed(context, '/community_forum');
+          break;
+        case 3:
+          Navigator.pushReplacementNamed(context, '/chats');
+          break;
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -304,6 +333,10 @@ class _Parent_hpage extends State<ParentHomePage> {
             ),
           ),
         ),
+      ),
+      bottomNavigationBar: AbilifyBottomNavBar(
+        currentIndex: _currentIndex,
+        onTap: _onTabTapped,
       ),
     );
   }

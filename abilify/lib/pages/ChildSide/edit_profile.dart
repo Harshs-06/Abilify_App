@@ -28,6 +28,7 @@ class _EditProfileState extends State<EditProfile> {
   final ImagePicker _picker = ImagePicker();
   String profileImagePath = '';
   bool isAssetImage = true;
+  bool hasChanges = false;
   
   @override
   void initState() {
@@ -35,6 +36,22 @@ class _EditProfileState extends State<EditProfile> {
     nameController = TextEditingController(text: widget.initialName);
     ageController = TextEditingController(text: widget.initialAge);
     profileImagePath = widget.profileImage;
+    
+    // Check if the initial image is an asset or a file
+    if (widget.profileImage.startsWith('/')) {
+      isAssetImage = false;
+      _imageFile = File(widget.profileImage);
+    }
+    
+    // Listen for changes to detect modifications
+    nameController.addListener(_onFieldChanged);
+    ageController.addListener(_onFieldChanged);
+  }
+  
+  void _onFieldChanged() {
+    setState(() {
+      hasChanges = true;
+    });
   }
   
   @override
@@ -46,9 +63,16 @@ class _EditProfileState extends State<EditProfile> {
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime now = DateTime.now();
+    int initialAge = 8;
+    try {
+      initialAge = int.parse(ageController.text);
+    } catch (e) {
+      // Use default if parsing fails
+    }
+    
     final DateTime? picked = await showDatePicker(
       context: context,
-      initialDate: now.subtract(Duration(days: 365 * int.parse(ageController.text))),
+      initialDate: now.subtract(Duration(days: 365 * initialAge)),
       firstDate: DateTime(now.year - 18),
       lastDate: now,
       builder: (context, child) {
@@ -71,6 +95,7 @@ class _EditProfileState extends State<EditProfile> {
         // Calculate age based on selected date
         final age = (now.difference(picked).inDays / 365).floor();
         ageController.text = age.toString();
+        hasChanges = true;
       });
     }
   }
@@ -82,6 +107,7 @@ class _EditProfileState extends State<EditProfile> {
         setState(() {
           _imageFile = File(pickedFile.path);
           isAssetImage = false;
+          hasChanges = true;
         });
       }
     } catch (e) {
@@ -93,147 +119,210 @@ class _EditProfileState extends State<EditProfile> {
   
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 251, 239, 215),
-      appBar: AppBar(
-        backgroundColor: Colors.amber.shade300,
-        elevation: 0,
-        leading: IconButton(
-          icon: Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              shape: BoxShape.circle,
+    return WillPopScope(
+      onWillPop: () async {
+        // Show confirmation dialog if there are unsaved changes
+        if (hasChanges) {
+          final shouldDiscard = await showDialog<bool>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: Text('Discard Changes?'),
+              content: Text('You have unsaved changes. Are you sure you want to go back?'),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  child: Text('Discard'),
+                ),
+              ],
             ),
-            child: Icon(Icons.arrow_back, color: Colors.black),
-          ),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'Edit Profile',
-          style: GoogleFonts.poppins(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
-          ),
-        ),
-        centerTitle: true,
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            
-            // Profile Picture
-            Center(
-              child: Stack(
-                children: [
-                  Container(
-                    width: 120,
-                    height: 120,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.amber,
-                        width: 4.0,
+          );
+          return shouldDiscard ?? false;
+        }
+        return true;
+      },
+      child: Scaffold(
+        backgroundColor: const Color.fromARGB(255, 251, 239, 215),
+        appBar: AppBar(
+          backgroundColor: Colors.amber.shade300,
+          elevation: 0,
+          leading: IconButton(
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.arrow_back, color: Colors.black),
+            ),
+            onPressed: () {
+              // Check for unsaved changes
+              if (hasChanges) {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text('Discard Changes?'),
+                    content: Text('You have unsaved changes. Are you sure you want to go back?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Text('Cancel'),
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 10,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: ClipOval(
-                      child: isAssetImage 
-                          ? Image.asset(
-                              profileImagePath,
-                              fit: BoxFit.cover,
-                            )
-                          : Image.file(
-                              _imageFile!,
-                              fit: BoxFit.cover,
-                            ),
-                    ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                          Navigator.of(context).pop();
+                        },
+                        child: Text('Discard'),
+                      ),
+                    ],
                   ),
-                  Positioned(
-                    bottom: 0,
-                    right: 0,
-                    child: GestureDetector(
-                      onTap: _pickImage,
-                      child: Container(
-                        height: 40,
-                        width: 40,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
+                );
+              } else {
+                Navigator.pop(context);
+              }
+            },
+          ),
+          title: Text(
+            'Edit Profile',
+            style: GoogleFonts.poppins(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.black,
+            ),
+          ),
+          centerTitle: true,
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            children: [
+              const SizedBox(height: 20),
+              
+              // Profile Picture
+              Center(
+                child: Stack(
+                  children: [
+                    Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
                           color: Colors.amber,
-                          border: Border.all(
-                            width: 2,
+                          width: 4.0,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: ClipOval(
+                        child: isAssetImage 
+                            ? Image.asset(
+                                profileImagePath,
+                                fit: BoxFit.cover,
+                              )
+                            : Image.file(
+                                _imageFile!,
+                                fit: BoxFit.cover,
+                              ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 0,
+                      right: 0,
+                      child: GestureDetector(
+                        onTap: _pickImage,
+                        child: Container(
+                          height: 40,
+                          width: 40,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.amber,
+                            border: Border.all(
+                              width: 2,
+                              color: Colors.white,
+                            ),
+                          ),
+                          child: Icon(
+                            Icons.camera_alt,
                             color: Colors.white,
                           ),
                         ),
-                        child: Icon(
-                          Icons.camera_alt,
-                          color: Colors.white,
-                        ),
                       ),
                     ),
+                  ],
+                ),
+              ),
+              
+              const SizedBox(height: 30),
+              
+              // Form Fields
+              buildFormField(
+                label: 'Name',
+                hintText: 'Enter your name',
+                controller: nameController,
+                icon: Icons.person,
+              ),
+              
+              const SizedBox(height: 20),
+              
+              buildAgeField(
+                label: 'Age',
+                hintText: 'Enter your age',
+                controller: ageController,
+                onIconTap: () => _selectDate(context),
+              ),
+              
+              const SizedBox(height: 40),
+              
+              // Save Button
+              ElevatedButton(
+                onPressed: () {
+                  // Validate input
+                  final name = nameController.text.trim();
+                  final age = ageController.text.trim();
+                  
+                  if (name.isEmpty) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Please enter a name')),
+                    );
+                    return;
+                  }
+                  
+                  // Return the updated profile data to previous screen
+                  Navigator.pop(context, {
+                    'name': name,
+                    'age': age,
+                    'profileImage': isAssetImage ? profileImagePath : _imageFile!.path,
+                    'isAssetImage': isAssetImage,
+                  });
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Color.fromARGB(255, 255, 125, 89),
+                  minimumSize: Size(double.infinity, 50),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 30),
-            
-            // Form Fields
-            buildFormField(
-              label: 'Name',
-              hintText: 'Enter your name',
-              controller: nameController,
-              icon: Icons.person,
-            ),
-            
-            const SizedBox(height: 20),
-            
-            buildAgeField(
-              label: 'Age',
-              hintText: 'Enter your age',
-              controller: ageController,
-              onIconTap: () => _selectDate(context),
-            ),
-            
-            const SizedBox(height: 40),
-            
-            // Save Button
-            ElevatedButton(
-              onPressed: () {
-                // Return the updated profile data to previous screen
-                Navigator.pop(context, {
-                  'name': nameController.text,
-                  'age': ageController.text,
-                  'profileImage': isAssetImage ? profileImagePath : _imageFile!.path,
-                  'isAssetImage': isAssetImage,
-                });
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Color.fromARGB(255, 255, 125, 89),
-                minimumSize: Size(double.infinity, 50),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  'Save Changes',
+                  style: GoogleFonts.poppins(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
               ),
-              child: Text(
-                'Save Changes',
-                style: GoogleFonts.poppins(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

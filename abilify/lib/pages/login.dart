@@ -4,12 +4,12 @@ import 'package:abilify/pages/ChildSide/child_home_page.dart';
 import 'package:abilify/pages/ParentSide/parent_home_page.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-
 import 'package:google_fonts/google_fonts.dart';
 
-
 class Login extends StatefulWidget {
-  const Login({super.key});
+  final String userType;
+  
+  const Login({super.key, this.userType = 'parent'});
 
   @override
   _LoginState createState() => _LoginState();
@@ -55,156 +55,238 @@ class _LoginState extends State<Login> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Color.fromARGB(255, 251, 239, 215),
-      body: Center(
+      body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Image.asset("assets/abilify_logo.png"),
+              // Add spacing at the top to push content down
+              SizedBox(height: 60),
+              
+              // Logo and family icon
               Container(
-                // width: 300,
+                width: 200,
+                height: 200,
                 decoration: BoxDecoration(
+                  shape: BoxShape.circle,
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(7),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
                 ),
-                child: TextField(
-                  keyboardType: TextInputType.emailAddress,
-                  controller: emailController,
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                    labelStyle: GoogleFonts.poppins(
-                      color: Colors.black,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(7),
-                      borderSide: BorderSide.none,
-                    ),
-                    filled: true,
-                    fillColor: Colors.white,
-                    prefixIcon: Icon(Icons.email),
-                  ),
-                ),
-              ),
-              SizedBox(height: 12),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(7),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black12,
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: TextField(
-                  keyboardType: TextInputType.visiblePassword,
-                  controller: passwordController,
-                  decoration: InputDecoration(
-                    labelText: 'Password',
-
-                    labelStyle: GoogleFonts.poppins(
-                      color: Colors.black,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(7),
-                      borderSide: BorderSide.none,
-                    ),
-                    suffixIcon: IconButton(
-                      onPressed: _togglePasswordVisibility,
-                      icon: Icon(
-                        obscureText ? Icons.visibility : Icons.visibility_off,
+                child: Stack(
+                  children: [
+                    Center(
+                      child: Image.asset(
+                        'assets/login_logo.png',
+                        width: 120,
                       ),
                     ),
-                    filled: true,
-                    fillColor: Colors.white,
-                    prefixIcon: Icon(Icons.lock),
-                  ),
-                  obscureText: obscureText,
+                    Positioned(
+                      top: 30,
+                      right: 15,
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.amber,
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 60,
+                      right: 35,
+                      child: Container(
+                        width: 15,
+                        height: 15,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.amber,
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      bottom: 60,
+                      left: 25,
+                      child: Container(
+                        width: 15,
+                        height: 15,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Colors.amber,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-
-              SizedBox(height: 12),
+              SizedBox(height: 40),
+              
+              // Welcome text
+              Text(
+                'Welcome to abilify!',
+                style: GoogleFonts.poppins(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 60),
+              
+              // Email Field
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: TextField(
+                  controller: emailController,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration: InputDecoration(
+                    hintText: 'Email',
+                    hintStyle: GoogleFonts.poppins(
+                      color: Colors.grey,
+                      fontSize: 16,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.email_outlined,
+                      color: Colors.grey,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: EdgeInsets.symmetric(vertical: 18),
+                  ),
+                ),
+              ),
+              SizedBox(height: 16),
+              
+              // Password Field
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: TextField(
+                  controller: passwordController,
+                  obscureText: obscureText,
+                  decoration: InputDecoration(
+                    hintText: 'Password',
+                    hintStyle: GoogleFonts.poppins(
+                      color: Colors.grey,
+                      fontSize: 16,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.lock_outline,
+                      color: Colors.grey,
+                    ),
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        obscureText ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                        color: Colors.grey,
+                      ),
+                      onPressed: _togglePasswordVisibility,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide.none,
+                    ),
+                    contentPadding: EdgeInsets.symmetric(vertical: 18),
+                  ),
+                ),
+              ),
+              SizedBox(height: 30),
+              
+              // Login Button - Updated color to match sign up button
               ElevatedButton(
-                onPressed:
-                    isButtonEnabled
-                        ? () {
-                          Navigator.push(
+                onPressed: isButtonEnabled
+                    ? () {
+                        // Navigate based on user type
+                        if (widget.userType == 'parent') {
+                          Navigator.pushReplacement(
                             context,
                             MaterialPageRoute(
                               builder: (context) => ParentHomePage(),
                             ),
                           );
+                        } else {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => ChildHomePage(),
+                            ),
+                          );
                         }
-                        : null,
-                // onPressed: () {
-                //   ScaffoldMessenger.of(context).showSnackBar(
-                //     const SnackBar(content: Text('Unable to fetch this email'),
-                //     behavior: SnackBarBehavior.floating,
-                //     showCloseIcon: true,
-                //     )
-                //   );
-                // },
+                      }
+                    : null,
                 style: ElevatedButton.styleFrom(
-                  minimumSize: Size(400, 50),
-                  maximumSize: Size(400, 50),
-                  backgroundColor:
-                      isButtonEnabled
-                          ? Color.fromARGB(255, 255, 125, 89)
-                          : Color.fromARGB(255, 255, 185, 166),
-                  disabledBackgroundColor: Color.fromARGB(255, 255, 185, 166),
-                  foregroundColor: Colors.white,
-                  disabledForegroundColor: Colors.white70,
+                  backgroundColor: Color(0xFFFE8668), // Coral color to match signup
+                  disabledBackgroundColor: Color(0xFFFE8668).withOpacity(0.6),
+                  minimumSize: Size(double.infinity, 55),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(7),
+                    borderRadius: BorderRadius.circular(30),
                   ),
+                  elevation: 0,
                 ),
-                child: Center(
-                  child: Text(
-                    "LogIn",
-                    style: GoogleFonts.poppins(
-                      fontSize: 20,
-                      fontWeight: FontWeight.w700,
-                    ),
+                child: Text(
+                  'LOGIN',
+                  style: GoogleFonts.poppins(
+                    color: Colors.white, // Changed to white to match signup
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
-
-              SizedBox(height: 12),
-              RichText(
-                text: TextSpan(
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  children: [
-                    TextSpan(
-                      text: 'New User? ',
-                      style: TextStyle(color: Colors.black),
+              SizedBox(height: 20),
+              
+              // Forgot Password
+              GestureDetector(
+                onTap: () {
+                  // Forgot password functionality can be added here
+                },
+                child: Text(
+                  'Forgot Password?',
+                  style: GoogleFonts.poppins(
+                    color: Colors.black54,
+                    fontSize: 16,
+                  ),
+                ),
+              ),
+              
+              Spacer(),
+              
+              // Sign Up Text
+              Padding(
+                padding: const EdgeInsets.only(bottom: 30.0),
+                child: RichText(
+                  text: TextSpan(
+                    style: GoogleFonts.poppins(
+                      fontSize: 16,
+                      color: Colors.black54,
                     ),
-                    TextSpan(
-                      text: 'SignUp',
-                      style: TextStyle(color: Colors.blueAccent),
-                      recognizer:
-                          TapGestureRecognizer()
-                            ..onTap = () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => SignIn(),
-                                ),
-                              );
-                            },
-                    ),
-                  ],
+                    children: [
+                      TextSpan(
+                        text: "Don't have an account? ",
+                      ),
+                      TextSpan(
+                        text: 'Sign Up',
+                        style: GoogleFonts.poppins(
+                          color: Colors.black87,
+                          fontWeight: FontWeight.bold,
+                        ),
+                        recognizer: TapGestureRecognizer()
+                          ..onTap = () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => SignIn(),
+                              ),
+                            );
+                          },
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
