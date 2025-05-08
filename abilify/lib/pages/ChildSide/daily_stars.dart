@@ -1,5 +1,7 @@
 import 'package:abilify/pages/ChildSide/child_home_page.dart';
+import 'package:abilify/pages/ChildSide/rewards_shop.dart';
 import 'package:abilify/pages/continue_as.dart';
+import 'package:abilify/services/rewards_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
@@ -12,19 +14,95 @@ class DailyStars extends StatefulWidget{
 }
 
 class _DailyStarsState extends State<DailyStars>{
-  @override
   bool col=false;
   bool col2=false;
   bool col3=false;
   bool col4=false;
   bool col5=false;
- 
+  
+  // Track which tasks have earned points today
+  final List<String> _tasksEarnedPoints = [];
+  final RewardsProvider _rewardsProvider = RewardsProvider();
+  int _points = 0;
+  bool _isLoading = true;
+  
+  @override
+  void initState() {
+    super.initState();
+    _loadRewardsData();
+  }
+  
+  Future<void> _loadRewardsData() async {
+    await _rewardsProvider.init();
+    setState(() {
+      _points = _rewardsProvider.points;
+      _isLoading = false;
+    });
+  }
+  
+  // Award points when a task is completed
+  Future<void> _awardPointsForTask(String taskId, bool isCompleted) async {
+    // If task is being completed and hasn't earned points yet
+    if (isCompleted && !_tasksEarnedPoints.contains(taskId)) {
+      // Different points based on task difficulty
+      int pointsToAward;
+      switch (taskId) {
+        case 'daily_login':
+          pointsToAward = 5;
+          break;
+        case 'play_games':
+          pointsToAward = 10;
+          break;
+        case 'listen_music':
+          pointsToAward = 10;
+          break;
+        case 'read_story':
+          pointsToAward = 15;
+          break;
+        case 'practice_skills':
+          pointsToAward = 20;
+          break;
+        default:
+          pointsToAward = 5;
+      }
+      
+      await _rewardsProvider.addPoints(pointsToAward);
+      _tasksEarnedPoints.add(taskId);
+      
+      setState(() {
+        _points = _rewardsProvider.points;
+      });
+      
+      // Show point earned notification
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('You earned $pointsToAward points!'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        )
+      );
+    }
+  }
+  
+  // Get completion percentage
+  double get completionPercentage {
+    int completedTasks = [col, col2, col3, col4, col5].where((isComplete) => isComplete).length;
+    return completedTasks / 5;
+  }
+  
+  // Get completion text (e.g., 3/5)
+  String get completionText {
+    int completedTasks = [col, col2, col3, col4, col5].where((isComplete) => isComplete).length;
+    return '$completedTasks/5';
+  }
 
  @override
   Widget build(BuildContext context) {
    return Scaffold(
     backgroundColor: Color.fromARGB(255, 251, 239, 215),
-    body: SafeArea(
+    body: _isLoading ? 
+      Center(child: CircularProgressIndicator(color: Colors.amber)) : 
+      SafeArea(
       child: SingleChildScrollView(
         child: Column( 
           children: [
@@ -100,7 +178,7 @@ class _DailyStarsState extends State<DailyStars>{
                         
                         Spacer(),
                         Container(
-                          padding: EdgeInsets.all(10),
+                          padding: EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             color: Colors.white,
                             shape: BoxShape.circle,
@@ -112,10 +190,23 @@ class _DailyStarsState extends State<DailyStars>{
                               ),
                             ],
                           ),
-                          child: Icon(
-                            Icons.star,
-                            color: Colors.amber,
-                            size: 20,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.stars,
+                                color: Colors.amber,
+                                size: 16,
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                '$_points',
+                                style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -172,7 +263,7 @@ class _DailyStarsState extends State<DailyStars>{
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            '3/5',
+                            completionText,
                             style: GoogleFonts.poppins(
                               color: Colors.orange,
                               fontWeight: FontWeight.w600,
@@ -185,7 +276,7 @@ class _DailyStarsState extends State<DailyStars>{
                     SizedBox(height: 16),
                     LinearPercentIndicator(
                       lineHeight: 16,
-                      percent: 0.7,
+                      percent: completionPercentage,
                       barRadius: Radius.circular(20),
                       progressColor: Colors.white,
                       backgroundColor: Colors.white.withOpacity(0.3),
@@ -228,9 +319,13 @@ class _DailyStarsState extends State<DailyStars>{
                     title: "Daily Login",
                     description: "Open abilify app today",
                     isCompleted: col,
+                    points: 5,
                     onChanged: (bool? value) {
                       setState(() {
                         col = value ?? false;
+                        if (col) {
+                          _awardPointsForTask('daily_login', col);
+                        }
                       });
                     },
                     icon: Icons.login,
@@ -244,9 +339,13 @@ class _DailyStarsState extends State<DailyStars>{
                     title: "Play Games",
                     description: "Play at least one game today",
                     isCompleted: col2,
+                    points: 10,
                     onChanged: (bool? value) {
                       setState(() {
                         col2 = value ?? false;
+                        if (col2) {
+                          _awardPointsForTask('play_games', col2);
+                        }
                       });
                     },
                     icon: Icons.games,
@@ -260,9 +359,13 @@ class _DailyStarsState extends State<DailyStars>{
                     title: "Listen to Music",
                     description: "Explore a music activity for 5 minutes",
                     isCompleted: col3,
+                    points: 10,
                     onChanged: (bool? value) {
                       setState(() {
                         col3 = value ?? false;
+                        if (col3) {
+                          _awardPointsForTask('listen_music', col3);
+                        }
                       });
                     },
                     icon: Icons.music_note,
@@ -276,9 +379,13 @@ class _DailyStarsState extends State<DailyStars>{
                     title: "Read a Story",
                     description: "Complete one Story from Story time",
                     isCompleted: col4,
+                    points: 15,
                     onChanged: (bool? value) {
                       setState(() {
                         col4 = value ?? false;
+                        if (col4) {
+                          _awardPointsForTask('read_story', col4);
+                        }
                       });
                     },
                     icon: Icons.menu_book,
@@ -292,9 +399,13 @@ class _DailyStarsState extends State<DailyStars>{
                     title: "Practice Skills",
                     description: "Complete a learning activity",
                     isCompleted: col5,
+                    points: 20,
                     onChanged: (bool? value) {
                       setState(() {
                         col5 = value ?? false;
+                        if (col5) {
+                          _awardPointsForTask('practice_skills', col5);
+                        }
                       });
                     },
                     icon: Icons.school,
@@ -304,65 +415,76 @@ class _DailyStarsState extends State<DailyStars>{
                   SizedBox(height: 24),
 
                   // Rewards Shop
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.purple.shade300,
-                          Colors.deepPurple.shade400,
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => RewardsShop()),
+                      ).then((_) {
+                        // Refresh points when returning from shop
+                        _loadRewardsData();
+                      });
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Colors.purple.shade300,
+                            Colors.deepPurple.shade400,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.purple.withOpacity(0.3),
+                            blurRadius: 10,
+                            offset: Offset(0, 4),
+                          ),
                         ],
                       ),
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.purple.withOpacity(0.3),
-                          blurRadius: 10,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Rewards Shop',
-                                style: GoogleFonts.poppins(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 18,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Rewards Shop',
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 18,
+                                  ),
                                 ),
-                              ),
-                              SizedBox(height: 4),
-                              Text(
-                                'Collect stars to unlock special rewards and features!',
-                                style: GoogleFonts.poppins(
-                                  color: Colors.white.withOpacity(0.9),
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 13,
+                                SizedBox(height: 4),
+                                Text(
+                                  'Spend your $_points points on special rewards!',
+                                  style: GoogleFonts.poppins(
+                                    color: Colors.white.withOpacity(0.9),
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 13,
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            shape: BoxShape.circle,
+                          Container(
+                            padding: EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              Icons.arrow_forward,
+                              color: Colors.deepPurple,
+                            ),
                           ),
-                          child: Icon(
-                            Icons.arrow_forward,
-                            color: Colors.deepPurple,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                   
@@ -386,6 +508,7 @@ class ChallengeCard extends StatelessWidget {
   final Function(bool?) onChanged;
   final IconData icon;
   final Color color;
+  final int points;
 
   const ChallengeCard({
     required this.title,
@@ -394,6 +517,7 @@ class ChallengeCard extends StatelessWidget {
     required this.onChanged,
     required this.icon,
     required this.color,
+    this.points = 5,
   });
 
   @override
@@ -438,13 +562,41 @@ class ChallengeCard extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.poppins(
-                      color: Colors.black,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          title,
+                          style: GoogleFonts.poppins(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.amber.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.stars, size: 12, color: Colors.amber),
+                            SizedBox(width: 2),
+                            Text(
+                              '+$points',
+                              style: GoogleFonts.poppins(
+                                color: Colors.black87,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                   Text(
                     description,
