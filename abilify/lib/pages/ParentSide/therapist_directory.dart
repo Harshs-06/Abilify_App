@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:abilify/widgets/map_view.dart';
+import 'package:abilify/utils/map_utils.dart';
+import 'package:abilify/utils/email_utils.dart';
 
-class TherapistDirectory extends StatelessWidget {
+class TherapistDirectory extends StatefulWidget {
   const TherapistDirectory({Key? key}) : super(key: key);
+
+  @override
+  _TherapistDirectoryState createState() => _TherapistDirectoryState();
+}
+
+class _TherapistDirectoryState extends State<TherapistDirectory> {
+  bool _showMap = false;
 
   @override
   Widget build(BuildContext context) {
@@ -22,77 +32,157 @@ class TherapistDirectory extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              _showMap ? Icons.list : Icons.map,
+              color: Colors.black,
+            ),
+            onPressed: () {
+              setState(() {
+                _showMap = !_showMap;
+              });
+            },
+          ),
+        ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        child: _showMap 
+            ? _buildMapView() 
+            : _buildListView(),
+      ),
+    );
+  }
+
+  Widget _buildMapView() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
+            child: Text(
+              'Nearby Therapists',
+              style: GoogleFonts.poppins(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+          ),
+          Text(
+            'Tap on markers to view therapist details',
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: Colors.grey.shade600,
+            ),
+          ),
+          MapView(
+            markers: MapUtils.getTherapistMarkers(),
+            markerColor: Color(0xFF4DC3FF),
+            height: MediaQuery.of(context).size.height * 0.6,
+          ),
+          SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _showMap = false;
+              });
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color(0xFF4DC3FF),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+              padding: EdgeInsets.symmetric(vertical: 12),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Search bar
-                Container(
-                  margin: EdgeInsets.symmetric(vertical: 20),
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText: 'Search therapists...',
-                            hintStyle: GoogleFonts.poppins(
-                              color: Colors.grey.shade500,
-                              fontSize: 16,
-                            ),
-                            border: InputBorder.none,
-                          ),
-                        ),
-                      ),
-                      Icon(
-                        Icons.search,
-                        color: Colors.grey.shade500,
-                        size: 28,
-                      ),
-                    ],
-                  ),
-                ),
-                
+                Icon(Icons.list),
+                SizedBox(width: 8),
                 Text(
-                  'Specialties',
+                  'Switch to List View',
                   style: GoogleFonts.poppins(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                
-                SizedBox(height: 16),
-                
-                // Specialties grid
-                GridView.count(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  crossAxisCount: 2,
-                  childAspectRatio: 2.5,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  children: [
-                    _buildSpecialtyChip('Speech Therapy'),
-                    _buildSpecialtyChip('Occupational Therapy'),
-                    _buildSpecialtyChip('Physical Therapy'),
-                    _buildSpecialtyChip('Behavioral Therapy'),
-                    _buildSpecialtyChip('ASD Specialists'),
-                    _buildSpecialtyChip('Child Psychology'),
-                  ],
-                ),
-                
-                SizedBox(height: 24),
-                
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildListView() {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Search bar
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 20),
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Search therapists...',
+                        hintStyle: GoogleFonts.poppins(
+                          color: Colors.grey.shade500,
+                          fontSize: 16,
+                        ),
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    Icons.search,
+                    color: Colors.grey.shade500,
+                    size: 28,
+                  ),
+                ],
+              ),
+            ),
+            
+            Text(
+              'Specialties',
+              style: GoogleFonts.poppins(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+            
+            SizedBox(height: 16),
+            
+            // Replace Specialties grid with Map
+            Container(
+              height: 200,
+              child: MapView(
+                markers: MapUtils.getTherapistMarkers(),
+                markerColor: Color(0xFF4DC3FF),
+                height: 200,
+                showCurrentLocation: true,
+              ),
+            ),
+            
+            SizedBox(height: 24),
+            
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
                 Text(
                   'Top Rated Therapists',
                   style: GoogleFonts.poppins(
@@ -101,48 +191,64 @@ class TherapistDirectory extends StatelessWidget {
                     color: Colors.black,
                   ),
                 ),
-                
-                SizedBox(height: 16),
-                
-                // Therapists list
-                _buildTherapistCard(
-                  name: 'Dr. Sarah Johnson',
-                  specialty: 'Speech Therapy',
-                  rating: 4.9,
-                  imageUrl: 'assets/therapist1.png',
+                ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _showMap = true;
+                    });
+                  },
+                  icon: Icon(Icons.map, size: 18),
+                  label: Text('Map'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFF4DC3FF),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
                 ),
-                
-                SizedBox(height: 16),
-                
-                _buildTherapistCard(
-                  name: 'Dr. Michael Chen',
-                  specialty: 'Occupational Therapy',
-                  rating: 4.8,
-                  imageUrl: 'assets/therapist2.png',
-                ),
-                
-                SizedBox(height: 16),
-                
-                _buildTherapistCard(
-                  name: 'Dr. Emily Williams',
-                  specialty: 'Behavioral Therapy',
-                  rating: 4.7,
-                  imageUrl: 'assets/therapist3.png',
-                ),
-                
-                SizedBox(height: 16),
-                
-                _buildTherapistCard(
-                  name: 'Dr. James Wilson',
-                  specialty: 'Child Psychology',
-                  rating: 4.9,
-                  imageUrl: 'assets/therapist4.png',
-                ),
-                
-                SizedBox(height: 100),
               ],
             ),
-          ),
+            
+            SizedBox(height: 16),
+            
+            // Therapists list
+            _buildTherapistCard(
+              name: 'Dr. Sarah Johnson',
+              specialty: 'Speech Therapy',
+              rating: 4.9,
+              imageUrl: 'assets/therapist1.png',
+            ),
+            
+            SizedBox(height: 16),
+            
+            _buildTherapistCard(
+              name: 'Dr. Michael Chen',
+              specialty: 'Occupational Therapy',
+              rating: 4.8,
+              imageUrl: 'assets/therapist2.png',
+            ),
+            
+            SizedBox(height: 16),
+            
+            _buildTherapistCard(
+              name: 'Dr. Emily Williams',
+              specialty: 'Behavioral Therapy',
+              rating: 4.7,
+              imageUrl: 'assets/therapist3.png',
+            ),
+            
+            SizedBox(height: 16),
+            
+            _buildTherapistCard(
+              name: 'Dr. James Wilson',
+              specialty: 'Child Psychology',
+              rating: 4.9,
+              imageUrl: 'assets/therapist4.png',
+            ),
+            
+            SizedBox(height: 100),
+          ],
         ),
       ),
     );
@@ -236,7 +342,12 @@ class TherapistDirectory extends StatelessWidget {
                     ),
                     Spacer(),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        EmailUtils.launchBookingEmail(
+                          serviceName: specialty,
+                          providerName: name,
+                        );
+                      },
                       child: Text('Book'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFF4DC3FF),
