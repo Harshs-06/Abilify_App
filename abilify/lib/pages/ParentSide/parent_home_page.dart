@@ -5,6 +5,7 @@ import 'package:abilify/customs/device_dimensions.dart';
 import 'package:abilify/customs/action_button_widget.dart';
 import 'package:abilify/customs/loading_screen.dart';
 import 'package:abilify/widgets/bottom_navigation.dart';
+import 'package:abilify/pages/ParentSide/community_events.dart';
 
 // Add imports for other pages that will be accessed from navigation bar
 // Add these as needed based on your file structure
@@ -267,7 +268,7 @@ class _Parent_hpage extends State<ParentHomePage> {
                         "assets/eventsicon.png",
                         () => navigateWithLoading(
   context,
-  ParentCommunityEvents(),
+  CommunityEvents(),
   () async {
     await Future.delayed(Duration(seconds: 2)); 
   },
@@ -337,200 +338,6 @@ class _Parent_hpage extends State<ParentHomePage> {
       bottomNavigationBar: AbilifyBottomNavBar(
         currentIndex: _currentIndex,
         onTap: _onTabTapped,
-      ),
-    );
-  }
-}
-
-class ParentCommunityEvents extends StatefulWidget {
-  const ParentCommunityEvents({super.key});
-
-  @override
-  _Parent_epage createState() => _Parent_epage();
-}
-
-class _Parent_epage extends State<ParentCommunityEvents> {
-  @override
-  Widget build(BuildContext context) {
-    final deviceWidth = getDevice_wh(context)[0];
-    final deviceHeight = getDevice_wh(context)[1];
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: Color(0xFFFAF0E6),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          child: Center(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 10,
-                  ),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: deviceWidth * 0.65,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              "Community Events",
-                              style: GoogleFonts.poppins(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            Text(
-                              "Discover events arranged for you and your kid!",
-                              style: GoogleFonts.poppins(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w400,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 20, left: 40),
-                        child: SizedBox(
-                          width: 45,
-                          height: 45,
-                          child: ClipOval(
-                            child: Image.asset(profile_img, fit: BoxFit.cover),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(height: deviceHeight * 0.01),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 16,
-                  ),
-                  child: GridView.count(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 20,
-                    mainAxisSpacing: 20,
-                    childAspectRatio: 1.6,
-
-                    physics: NeverScrollableScrollPhysics(),
-                    shrinkWrap: true,
-                    children: [
-                      actionsButton(
-                        "Parent Support",
-                        "assets/eventsicon.png",
-                        () {},
-                      ),
-                      actionsButton(
-                        "Playgrounds",
-                        "assets/playgroundicon.png",
-                        () {},
-                      ),
-                      actionsButton(
-                        "Workshops",
-                        "assets/workshopicon.png",
-                        () {},
-                      ),
-                      actionsButton("Therapy", "assets/therapyicon.png", () {}),
-                    ],
-                  ),
-                ),
-
-                SizedBox(height: deviceHeight * 0.03),
-                Column(
-                  children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Padding(
-                        padding: const EdgeInsets.only(left: 20, bottom: 16),
-                        child: Text(
-                          "Upcoming Events",
-                          style: GoogleFonts.titilliumWeb(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                            color: Color.fromRGBO(29, 28, 28, 1),
-                          ),
-                        ),
-                      ),
-                    ),
-                    upcomingeventslist(
-                      "assets/parentsupport.png",
-                      "Parent Support Group",
-                      "13/02/25 , 10:00 AM",
-                      "Community Centre, 123 Church Street",
-                      deviceWidth,
-                      deviceHeight,
-                    ),
-
-                    upcomingeventslist(
-                      "assets/workshop.png",
-                      "IEP Workshop",
-                      "13/02/25 , 7:00 AM",
-                      "Virtual Meeting (Zoom)",
-                      deviceWidth,
-                      deviceHeight,
-                    ),
-                    upcomingeventslist(
-                      "assets/parentsupport.png",
-                      "Parent Support Group",
-                      "13/02/25 , 10:00 AM",
-                      "Community Centre, 123 Church Street",
-                      deviceWidth,
-                      deviceHeight,
-                    ),
-
-                    upcomingeventslist(
-                      "assets/workshop.png",
-                      "IEP Workshop",
-                      "13/02/25 , 7:00 AM",
-                      "Virtual Meeting (Zoom)",
-                      deviceWidth,
-                      deviceHeight,
-                    ),
-                    upcomingeventslist(
-                      "assets/parentsupport.png",
-                      "Parent Support Group",
-                      "13/02/25 , 10:00 AM",
-                      "Community Centre, 123 Church Street",
-                      deviceWidth,
-                      deviceHeight,
-                    ),
-
-                    upcomingeventslist(
-                      "assets/workshop.png",
-                      "IEP Workshop",
-                      "13/02/25 , 7:00 AM",
-                      "Virtual Meeting (Zoom)",
-                      deviceWidth,
-                      deviceHeight,
-                    ),
-                    upcomingeventslist(
-                      "assets/parentsupport.png",
-                      "Parent Support Group",
-                      "13/02/25 , 10:00 AM",
-                      "Community Centre, 123 Church Street",
-                      deviceWidth,
-                      deviceHeight,
-                    ),
-
-                    upcomingeventslist(
-                      "assets/workshop.png",
-                      "IEP Workshop",
-                      "13/02/25 , 7:00 AM",
-                      "Virtual Meeting (Zoom)",
-                      deviceWidth,
-                      deviceHeight,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        ),
       ),
     );
   }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
 
 class CreativeCorner extends StatefulWidget {
   const CreativeCorner({super.key});
@@ -11,6 +13,42 @@ class CreativeCorner extends StatefulWidget {
 
 class _CreativeCornerState extends State<CreativeCorner> {
   int _selectedCategoryIndex = 0;
+  final TextEditingController _postController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
+  
+  // Posts data with mutable likes and comments
+  List<Map<String, dynamic>> _posts = [
+    {
+      'childName': 'Jade',
+      'timePosted': 'Today, 2:30 PM',
+      'content': 'I drew this picture of my family at the park!',
+      'imagePath': 'assets/story_time.png',
+      'isAsset': true,
+      'likes': 15,
+      'likedByMe': false,
+      'comments': 4,
+    },
+    {
+      'childName': 'Sammy',
+      'timePosted': 'Yesterday, 5:15 PM',
+      'content': 'My clay animal collection I made in art class!',
+      'imagePath': 'assets/story_time.png',
+      'isAsset': true,
+      'likes': 23,
+      'likedByMe': false,
+      'comments': 7,
+    },
+    {
+      'childName': 'Leo',
+      'timePosted': 'Monday, 4:45 PM',
+      'content': 'My favorite drawing of the week - space adventure!',
+      'imagePath': 'assets/story_time.png',
+      'isAsset': true,
+      'likes': 32,
+      'likedByMe': false,
+      'comments': 12,
+    },
+  ];
   
   final List<Map<String, dynamic>> _categories = [
     {
@@ -39,6 +77,201 @@ class _CreativeCornerState extends State<CreativeCorner> {
       'color': Color(0xFFAA7EFF),
     },
   ];
+
+  void _showAddPostDialog() {
+    String? selectedImagePath;
+    File? selectedImageFile;
+    bool isAsset = true;
+    
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: Text(
+                'Share Your Art',
+                style: GoogleFonts.poppins(
+                  fontWeight: FontWeight.bold,
+                  color: Colors.blue.shade700,
+                ),
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: _postController,
+                      maxLines: 4,
+                      decoration: InputDecoration(
+                        hintText: 'Tell us about your artwork...',
+                        hintStyle: GoogleFonts.poppins(),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide(color: Colors.blue.shade100),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide(color: Colors.blue.shade400, width: 2),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Text(
+                          'Add Art:',
+                          style: GoogleFonts.poppins(
+                            fontWeight: FontWeight.w500,
+                            color: Colors.blue.shade700,
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        ElevatedButton.icon(
+                          onPressed: () async {
+                            try {
+                              final XFile? image = await _picker.pickImage(
+                                source: ImageSource.gallery,
+                                imageQuality: 80,
+                              );
+                              
+                              if (image != null) {
+                                setState(() {
+                                  selectedImageFile = File(image.path);
+                                  selectedImagePath = image.path;
+                                  isAsset = false;
+                                });
+                              }
+                            } catch (e) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Oops! Something went wrong picking your image.'),
+                                  backgroundColor: Colors.red.shade300,
+                                ),
+                              );
+                            }
+                          },
+                          icon: Icon(Icons.image, color: Colors.white),
+                          label: Text(
+                            'Choose Picture',
+                            style: GoogleFonts.poppins(color: Colors.white),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.amber,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    if (selectedImageFile != null) ...[
+                      SizedBox(height: 16),
+                      Container(
+                        height: 150,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(15),
+                          border: Border.all(color: Colors.blue.shade100, width: 2),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: Image.file(
+                            selectedImageFile!,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    _postController.clear();
+                  },
+                  child: Text(
+                    'Cancel',
+                    style: GoogleFonts.poppins(
+                      color: Colors.grey[600],
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    if (_postController.text.isNotEmpty && selectedImagePath != null) {
+                      _addNewPost(_postController.text, selectedImagePath, isAsset);
+                      Navigator.of(context).pop();
+                      _postController.clear();
+                      
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Your artwork was shared! 🎨'),
+                          backgroundColor: Colors.green.shade400,
+                        ),
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Please add both text and an image'),
+                          backgroundColor: Colors.amber.shade400,
+                        ),
+                      );
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue.shade400,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: Text(
+                    'Share',
+                    style: GoogleFonts.poppins(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ],
+            );
+          }
+        );
+      },
+    );
+  }
+  
+  void _addNewPost(String content, String? imagePath, bool isAsset) {
+    setState(() {
+      _posts.insert(0, {
+        'childName': 'Me',
+        'timePosted': 'Just now',
+        'content': content,
+        'imagePath': imagePath,
+        'isAsset': isAsset,
+        'likes': 0,
+        'likedByMe': false,
+        'comments': 0,
+      });
+    });
+  }
+  
+  void _toggleLike(int index) {
+    setState(() {
+      if (_posts[index]['likedByMe']) {
+        _posts[index]['likes'] = _posts[index]['likes'] - 1;
+      } else {
+        _posts[index]['likes'] = _posts[index]['likes'] + 1;
+      }
+      _posts[index]['likedByMe'] = !_posts[index]['likedByMe'];
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -208,6 +441,11 @@ class _CreativeCornerState extends State<CreativeCorner> {
                         setState(() {
                           _selectedCategoryIndex = index;
                         });
+                        
+                        // Handle Add button tap
+                        if (index == 0) {
+                          _showAddPostDialog();
+                        }
                       },
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
@@ -248,87 +486,74 @@ class _CreativeCornerState extends State<CreativeCorner> {
               ),
               
               // Create post area
-              Container(
-                margin: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                padding: EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 8,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 25,
-                      backgroundColor: Colors.amber.shade200,
-                      child: Icon(
-                        Icons.person,
-                        color: Colors.amber.shade800,
-                        size: 28,
+              GestureDetector(
+                onTap: _showAddPostDialog,
+                child: Container(
+                  margin: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  padding: EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 8,
+                        offset: Offset(0, 2),
                       ),
-                    ),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Share your artwork...',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          color: Colors.grey.shade500,
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      CircleAvatar(
+                        radius: 25,
+                        backgroundColor: Colors.amber.shade200,
+                        child: Icon(
+                          Icons.person,
+                          color: Colors.amber.shade800,
+                          size: 28,
                         ),
                       ),
-                    ),
-                    Container(
-                      padding: EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.shade100,
-                        shape: BoxShape.circle,
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          'Share your artwork...',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            color: Colors.grey.shade500,
+                          ),
+                        ),
                       ),
-                      child: Icon(
-                        Icons.add_photo_alternate,
-                        color: Colors.blue,
+                      Container(
+                        padding: EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.shade100,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.add_photo_alternate,
+                          color: Colors.blue,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
               
               // Posts
-              _buildCreativePost(
-                childName: 'Jade',
-                timePosted: 'Today, 2:30 PM',
-                content: 'I drew this picture of my family at the park!',
-                imagePath: 'assets/story_time.png',
-                likes: 15,
-                comments: 4,
-              ),
-              
-              SizedBox(height: 12),
-              
-              _buildCreativePost(
-                childName: 'Sammy',
-                timePosted: 'Yesterday, 5:15 PM',
-                content: 'My clay animal collection I made in art class!',
-                imagePath: 'assets/story_time.png',
-                likes: 23,
-                comments: 7,
-              ),
-              
-              SizedBox(height: 12),
-              
-              _buildCreativePost(
-                childName: 'Leo',
-                timePosted: 'Monday, 4:45 PM',
-                content: 'My favorite drawing of the week - space adventure!',
-                imagePath: 'assets/story_time.png',
-                likes: 32,
-                comments: 12,
-              ),
+              for (int i = 0; i < _posts.length; i++) ...[
+                _buildCreativePost(
+                  index: i,
+                  childName: _posts[i]['childName'],
+                  timePosted: _posts[i]['timePosted'],
+                  content: _posts[i]['content'],
+                  imagePath: _posts[i]['imagePath'],
+                  isAsset: _posts[i]['isAsset'],
+                  likes: _posts[i]['likes'],
+                  comments: _posts[i]['comments'],
+                  isLiked: _posts[i]['likedByMe'],
+                ),
+                SizedBox(height: 12),
+              ],
               
               SizedBox(height: 30),
             ],
@@ -339,12 +564,15 @@ class _CreativeCornerState extends State<CreativeCorner> {
   }
   
   Widget _buildCreativePost({
+    required int index,
     required String childName,
     required String timePosted,
     required String content,
     required String imagePath,
+    required bool isAsset,
     required int likes,
     required int comments,
+    required bool isLiked,
   }) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16),
@@ -437,12 +665,19 @@ class _CreativeCornerState extends State<CreativeCorner> {
               bottomLeft: Radius.circular(20),
               bottomRight: Radius.circular(20),
             ),
-            child: Image.asset(
-              imagePath,
-              width: double.infinity,
-              height: 240,
-              fit: BoxFit.cover,
-            ),
+            child: isAsset 
+              ? Image.asset(
+                  imagePath,
+                  width: double.infinity,
+                  height: 240,
+                  fit: BoxFit.cover,
+                )
+              : Image.file(
+                  File(imagePath),
+                  width: double.infinity,
+                  height: 240,
+                  fit: BoxFit.cover,
+                ),
           ),
           
           // Actions
@@ -457,22 +692,26 @@ class _CreativeCornerState extends State<CreativeCorner> {
             ),
             child: Row(
               children: [
-                Row(
-                  children: [
-                    Icon(
-                      Icons.favorite_border,
-                      color: Colors.red,
-                      size: 22,
-                    ),
-                    SizedBox(width: 4),
-                    Text(
-                      likes.toString(),
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                GestureDetector(
+                  onTap: () => _toggleLike(index),
+                  child: Row(
+                    children: [
+                      Icon(
+                        isLiked ? Icons.favorite : Icons.favorite_border,
+                        color: isLiked ? Colors.red : Colors.red.shade300,
+                        size: 22,
                       ),
-                    ),
-                  ],
+                      SizedBox(width: 4),
+                      Text(
+                        likes.toString(),
+                        style: GoogleFonts.poppins(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: isLiked ? Colors.red : Colors.black,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 SizedBox(width: 24),
                 Row(
