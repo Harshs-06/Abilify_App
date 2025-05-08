@@ -1,8 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:abilify/widgets/map_view.dart';
+import 'package:abilify/utils/map_utils.dart';
+import 'package:abilify/utils/email_utils.dart';
 
-class SchoolsDirectory extends StatelessWidget {
+class SchoolsDirectory extends StatefulWidget {
   const SchoolsDirectory({Key? key}) : super(key: key);
+
+  @override
+  _SchoolsDirectoryState createState() => _SchoolsDirectoryState();
+}
+
+class _SchoolsDirectoryState extends State<SchoolsDirectory> {
+  bool _showMap = false;
 
   @override
   Widget build(BuildContext context) {
@@ -22,157 +32,253 @@ class SchoolsDirectory extends StatelessWidget {
             fontWeight: FontWeight.bold,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              _showMap ? Icons.list : Icons.map,
+              color: Colors.black,
+            ),
+            onPressed: () {
+              setState(() {
+                _showMap = !_showMap;
+              });
+            },
+          ),
+        ],
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        child: _showMap 
+            ? _buildMapView() 
+            : _buildListView(),
+      ),
+    );
+  }
+
+  Widget _buildMapView() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 16.0, bottom: 8.0),
+            child: Text(
+              'Special Education Schools',
+              style: GoogleFonts.poppins(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+          ),
+          Text(
+            'Tap on markers to view school details',
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: Colors.grey.shade600,
+            ),
+          ),
+          MapView(
+            markers: MapUtils.getSchoolMarkers(),
+            markerColor: Color(0xFFFFD166),
+            height: MediaQuery.of(context).size.height * 0.6,
+          ),
+          SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: () {
+              setState(() {
+                _showMap = false;
+              });
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color(0xFFFFD166),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(30),
+              ),
+              padding: EdgeInsets.symmetric(vertical: 12),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Search bar
-                Container(
-                  margin: EdgeInsets.symmetric(vertical: 20),
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText: 'Search schools by name or location...',
-                            hintStyle: GoogleFonts.poppins(
-                              color: Colors.grey.shade500,
-                              fontSize: 16,
-                            ),
-                            border: InputBorder.none,
-                          ),
-                        ),
-                      ),
-                      Icon(
-                        Icons.search,
-                        color: Colors.grey.shade500,
-                        size: 28,
-                      ),
-                    ],
-                  ),
-                ),
-                
+                Icon(Icons.list),
+                SizedBox(width: 8),
                 Text(
-                  'School Types',
+                  'Switch to List View',
                   style: GoogleFonts.poppins(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                
-                SizedBox(height: 16),
-                
-                // School types grid
-                GridView.count(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  crossAxisCount: 2,
-                  childAspectRatio: 2.5,
-                  crossAxisSpacing: 10,
-                  mainAxisSpacing: 10,
-                  children: [
-                    _buildSchoolTypeChip('Special Education'),
-                    _buildSchoolTypeChip('Inclusive Schools'),
-                    _buildSchoolTypeChip('Specialized Programs'),
-                    _buildSchoolTypeChip('Montessori'),
-                    _buildSchoolTypeChip('Public Schools'),
-                    _buildSchoolTypeChip('Private Schools'),
-                  ],
-                ),
-                
-                SizedBox(height: 24),
-                
-                Text(
-                  'Top Special Needs Schools',
-                  style: GoogleFonts.poppins(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                
-                SizedBox(height: 16),
-                
-                // Schools list
-                _buildSchoolCard(
-                  name: 'Bright Stars Academy',
-                  type: 'Special Education',
-                  rating: 4.8,
-                  distance: '1.5',
-                  imageUrl: 'assets/school1.png',
-                ),
-                
-                SizedBox(height: 16),
-                
-                _buildSchoolCard(
-                  name: 'Inclusive Learning Center',
-                  type: 'Inclusive School',
-                  rating: 4.9,
-                  distance: '2.3',
-                  imageUrl: 'assets/school2.png',
-                ),
-                
-                SizedBox(height: 16),
-                
-                _buildSchoolCard(
-                  name: 'Rainbow Kids School',
-                  type: 'Specialized Programs',
-                  rating: 4.7,
-                  distance: '3.1',
-                  imageUrl: 'assets/school3.png',
-                ),
-                
-                SizedBox(height: 24),
-                
-                Text(
-                  'Special Education Resources',
-                  style: GoogleFonts.poppins(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                
-                SizedBox(height: 16),
-                
-                // Resources list
-                _buildResourceCard(
-                  title: 'Understanding IEPs',
-                  description: 'Guide to Individualized Education Programs',
-                  type: 'PDF Guide',
-                ),
-                
-                SizedBox(height: 12),
-                
-                _buildResourceCard(
-                  title: 'School Transition Planning',
-                  description: 'Tips for smooth transitions between schools',
-                  type: 'Webinar',
-                ),
-                
-                SizedBox(height: 12),
-                
-                _buildResourceCard(
-                  title: 'Choosing the Right School',
-                  description: 'Factors to consider for special needs children',
-                  type: 'Article',
-                ),
-                
-                SizedBox(height: 100),
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildListView() {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Search bar
+            Container(
+              margin: EdgeInsets.symmetric(vertical: 20),
+              padding: EdgeInsets.symmetric(horizontal: 16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(color: Colors.grey.shade300),
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: 'Search schools by name or location...',
+                        hintStyle: GoogleFonts.poppins(
+                          color: Colors.grey.shade500,
+                          fontSize: 16,
+                        ),
+                        border: InputBorder.none,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    Icons.search,
+                    color: Colors.grey.shade500,
+                    size: 28,
+                  ),
+                ],
+              ),
+            ),
+            
+            Text(
+              'School Types',
+              style: GoogleFonts.poppins(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+            
+            SizedBox(height: 16),
+            
+            // Replace School types grid with Map
+            Container(
+              height: 200,
+              child: MapView(
+                markers: MapUtils.getSchoolMarkers(),
+                markerColor: Color(0xFFFFD166),
+                height: 200,
+                showCurrentLocation: true,
+              ),
+            ),
+            
+            SizedBox(height: 24),
+            
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Top Special Needs Schools',
+                  style: GoogleFonts.poppins(
+                    fontSize: 19,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _showMap = true;
+                    });
+                  },
+                  icon: Icon(Icons.map, size: 18),
+                  label: Text('Map'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Color(0xFFFFD166),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            
+            SizedBox(height: 16),
+            
+            // Schools list
+            _buildSchoolCard(
+              name: 'Bright Stars Academy',
+              type: 'Special Education',
+              rating: 4.8,
+              distance: '1.5',
+              imageUrl: 'assets/school1.png',
+            ),
+            
+            SizedBox(height: 16),
+            
+            _buildSchoolCard(
+              name: 'Inclusive Learning Center',
+              type: 'Inclusive School',
+              rating: 4.9,
+              distance: '2.3',
+              imageUrl: 'assets/school2.png',
+            ),
+            
+            SizedBox(height: 16),
+            
+            _buildSchoolCard(
+              name: 'Rainbow Kids School',
+              type: 'Specialized Programs',
+              rating: 4.7,
+              distance: '3.1',
+              imageUrl: 'assets/school3.png',
+            ),
+            
+            SizedBox(height: 24),
+            
+            Text(
+              'Special Education Resources',
+              style: GoogleFonts.poppins(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+                color: Colors.black,
+              ),
+            ),
+            
+            SizedBox(height: 16),
+            
+            // Resources list
+            _buildResourceCard(
+              title: 'Understanding IEPs',
+              description: 'Guide to Individualized Education Programs',
+              type: 'PDF Guide',
+            ),
+            
+            SizedBox(height: 12),
+            
+            _buildResourceCard(
+              title: 'School Transition Planning',
+              description: 'Tips for smooth transitions between schools',
+              type: 'Webinar',
+            ),
+            
+            SizedBox(height: 12),
+            
+            _buildResourceCard(
+              title: 'Choosing the Right School',
+              description: 'Factors to consider for special needs children',
+              type: 'Article',
+            ),
+            
+            SizedBox(height: 100),
+          ],
         ),
       ),
     );
@@ -278,7 +384,12 @@ class SchoolsDirectory extends StatelessWidget {
                     ),
                     Spacer(),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        EmailUtils.launchContactEmail(
+                          serviceName: type,
+                          providerName: name,
+                        );
+                      },
                       child: Text('Info'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFFFFD166),
@@ -355,7 +466,13 @@ class SchoolsDirectory extends StatelessWidget {
             ),
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: () {
+              EmailUtils.launchContactEmail(
+                serviceName: type,
+                providerName: title,
+                recipient: 'resources@abilify.com'
+              );
+            },
             icon: Icon(Icons.arrow_forward_ios, size: 18),
             color: Colors.grey.shade400,
           ),
