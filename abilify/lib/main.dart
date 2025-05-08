@@ -13,7 +13,10 @@ import 'package:abilify/pages/ParentSide/community_events.dart';
 import 'package:abilify/pages/ParentSide/chats.dart';
 import 'package:abilify/pages/splash.dart';
 import 'package:abilify/services/user_data_provider.dart';
+import 'package:abilify/services/rewards_provider.dart';
+import 'package:abilify/services/cart_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,10 +24,15 @@ void main() async {
   // Initialize user data provider
   await UserDataProvider().init();
   
+  // Initialize rewards provider
+  await RewardsProvider().init();
+  
   runApp(
-    MyApp(
-      // debugShowCheckedModeBanner: false,
-      // home: SignIn(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => CartProvider()),
+      ],
+      child: MyApp(),
     ),
   );
 }

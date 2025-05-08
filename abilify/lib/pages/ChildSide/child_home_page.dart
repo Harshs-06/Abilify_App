@@ -4,6 +4,9 @@ import 'package:abilify/pages/ChildSide/creative_corner.dart';
 import 'package:abilify/pages/ChildSide/chat_along.dart';
 import 'package:abilify/pages/ChildSide/daily_stars.dart';
 import 'package:abilify/pages/ChildSide/child_profile.dart';
+import 'package:abilify/pages/ChildSide/rewards_shop.dart';
+import 'package:abilify/pages/ChildSide/my_rewards.dart';
+import 'package:abilify/services/rewards_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
@@ -471,7 +474,218 @@ class _ChildHomeState extends State<ChildHomePage>{
                     SizedBox(height: 24),
                   ],
                 ),
-              )
+              ),
+              
+              // Rewards section
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.stars, color: Colors.amber),
+                        SizedBox(width: 8),
+                        Text(
+                          'Rewards & Prizes',
+                          style: GoogleFonts.poppins(
+                            color: Colors.black,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 20,
+                          ),
+                        ),
+                      ],
+                    ),
+                    
+                    SizedBox(height: 16),
+                    
+                    // Rewards cards row
+                    Row(
+                      children: [
+                        // Rewards Shop card
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context, 
+                                MaterialPageRoute(builder: (context) => RewardsShop())
+                              ).then((_) {
+                                // Refresh when returning from shop
+                                setState(() {});
+                              });
+                            },
+                            child: Container(
+                              height: 120,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                color: Colors.amber.shade100,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.amber.withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Colors.amber.shade300,
+                                    Colors.amber.shade100,
+                                  ],
+                                ),
+                              ),
+                              child: Stack(
+                                children: [
+                                  Positioned(
+                                    right: -10,
+                                    bottom: -10,
+                                    child: Container(
+                                      width: 80,
+                                      height: 80,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.3),
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Icon(
+                                          Icons.shopping_bag,
+                                          color: Colors.white,
+                                          size: 32,
+                                        ),
+                                        Spacer(),
+                                        Text(
+                                          'Rewards Shop',
+                                          style: GoogleFonts.poppins(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        SizedBox(height: 4),
+                                        FutureBuilder<void>(
+                                          future: RewardsProvider().init(),
+                                          builder: (context, snapshot) {
+                                            if (snapshot.connectionState == ConnectionState.done) {
+                                              final points = RewardsProvider().points;
+                                              return Text(
+                                                '$points points available',
+                                                style: GoogleFonts.poppins(
+                                                  color: Colors.white.withOpacity(0.8),
+                                                  fontSize: 12,
+                                                ),
+                                              );
+                                            } else {
+                                              return Text(
+                                                'Loading points...',
+                                                style: GoogleFonts.poppins(
+                                                  color: Colors.white.withOpacity(0.8),
+                                                  fontSize: 12,
+                                                ),
+                                              );
+                                            }
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 16),
+                        // My Rewards card
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context, 
+                                MaterialPageRoute(builder: (context) => MyRewards())
+                              );
+                            },
+                            child: Container(
+                              height: 120,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.green.withOpacity(0.3),
+                                    blurRadius: 8,
+                                    offset: Offset(0, 4),
+                                  ),
+                                ],
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Colors.green.shade300,
+                                    Colors.green.shade100,
+                                  ],
+                                ),
+                              ),
+                              child: Stack(
+                                children: [
+                                  Positioned(
+                                    right: -10,
+                                    bottom: -10,
+                                    child: Container(
+                                      width: 80,
+                                      height: 80,
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withOpacity(0.3),
+                                        shape: BoxShape.circle,
+                                      ),
+                                    ),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.all(16.0),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        Icon(
+                                          Icons.card_giftcard,
+                                          color: Colors.white,
+                                          size: 32,
+                                        ),
+                                        Spacer(),
+                                        Text(
+                                          'My Rewards',
+                                          style: GoogleFonts.poppins(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 16,
+                                          ),
+                                        ),
+                                        SizedBox(height: 4),
+                                        Text(
+                                          'See your collection',
+                                          style: GoogleFonts.poppins(
+                                            color: Colors.white.withOpacity(0.8),
+                                            fontSize: 12,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              
+              SizedBox(height: 24),
             ],
           ),
         ),
