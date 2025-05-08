@@ -42,6 +42,7 @@ dependencies:
   flutter_native_splash: ^2.3.0
   image_picker: ^1.0.7
   shared_preferences: ^2.2.0
+  table_calendar: ^3.0.9
 
 flutter_native_splash:
   color: "#faf0e6"

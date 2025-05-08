@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:abilify/widgets/bottom_navigation.dart';
+import 'package:abilify/pages/ParentSide/therapist_directory.dart';
+import 'package:abilify/pages/ParentSide/medical_directory.dart';
+import 'package:abilify/pages/ParentSide/schools_directory.dart';
+import 'package:abilify/pages/ParentSide/care_directory.dart';
 
 class ServiceDirectory extends StatefulWidget {
   const ServiceDirectory({Key? key}) : super(key: key);
@@ -140,21 +144,37 @@ class _ServiceDirectoryState extends State<ServiceDirectory> {
                         icon: Icons.person,
                         color: Color(0xFF4DC3FF), // Light blue
                         label: 'Therapists',
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => TherapistDirectory()),
+                        ),
                       ),
                       _buildCategoryItem(
                         icon: Icons.school,
                         color: Color(0xFFFFD166), // Yellow
                         label: 'Schools',
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => SchoolsDirectory()),
+                        ),
                       ),
                       _buildCategoryItem(
                         icon: Icons.medical_services,
                         color: Color(0xFF8AE066), // Light green
                         label: 'Medical',
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => MedicalDirectory()),
+                        ),
                       ),
                       _buildCategoryItem(
                         icon: Icons.favorite,
                         color: Color(0xFFAA7EFF), // Purple
                         label: 'Caregivers',
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => CareDirectory()),
+                        ),
                       ),
                     ],
                   ),
@@ -259,31 +279,35 @@ class _ServiceDirectoryState extends State<ServiceDirectory> {
     required IconData icon,
     required Color color,
     required String label,
+    required VoidCallback onTap,
   }) {
-    return Column(
-      children: [
-        Container(
-          width: 60,
-          height: 60,
-          decoration: BoxDecoration(
-            color: color,
-            shape: BoxShape.circle,
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            width: 60,
+            height: 60,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              icon,
+              color: Colors.white,
+              size: 30,
+            ),
           ),
-          child: Icon(
-            icon,
-            color: Colors.white,
-            size: 30,
+          SizedBox(height: 8),
+          Text(
+            label,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        ),
-        SizedBox(height: 8),
-        Text(
-          label,
-          style: GoogleFonts.poppins(
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
   
