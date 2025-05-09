@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:abilify/models/chat_model.dart';
 import 'package:abilify/pages/ChildSide/child_chat_detail.dart';
 import 'package:abilify/pages/ChildSide/child_home_page.dart';
+import 'package:abilify/pages/ChildSide/child_add_friend.dart';
 
 class ChildChatList extends StatefulWidget {
   const ChildChatList({Key? key}) : super(key: key);
@@ -108,7 +109,12 @@ class _ChildChatListState extends State<ChildChatList> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ChildAddFriend()),
+          );
+        },
         backgroundColor: Colors.amber,
         child: Icon(Icons.add, color: Colors.white),
         shape: RoundedRectangleBorder(
@@ -158,7 +164,12 @@ class _ChildChatListState extends State<ChildChatList> {
           ),
           SizedBox(height: 24),
           ElevatedButton(
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ChildAddFriend()),
+              );
+            },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.amber,
               padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),

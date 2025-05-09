@@ -14,6 +14,8 @@ import 'package:abilify/pages/ParentSide/chats.dart';
 import 'package:abilify/pages/ChildSide/child_chat_list.dart';
 import 'package:abilify/pages/ParentSide/parent_profile_edit.dart';
 import 'package:abilify/pages/ParentSide/parent_settings.dart';
+import 'package:abilify/pages/ParentSide/parent_add_contact.dart';
+import 'package:abilify/pages/ChildSide/child_add_friend.dart';
 import 'package:abilify/pages/splash.dart';
 import 'package:abilify/services/user_data_provider.dart';
 import 'package:abilify/services/rewards_provider.dart';
@@ -61,6 +63,8 @@ class MyApp extends StatelessWidget {
         "/child_chat_list": (context) => ChildChatList(),
         "/parent_profile_edit": (context) => ParentProfileEdit(),
         "/parent_settings": (context) => ParentSettings(),
+        "/parent_add_contact": (context) => ParentAddContact(),
+        "/child_add_friend": (context) => ChildAddFriend(),
       },
     );
   }
