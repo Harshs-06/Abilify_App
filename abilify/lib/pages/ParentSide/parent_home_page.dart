@@ -6,6 +6,9 @@ import 'package:abilify/customs/action_button_widget.dart';
 import 'package:abilify/customs/loading_screen.dart';
 import 'package:abilify/widgets/bottom_navigation.dart';
 import 'package:abilify/pages/ParentSide/community_events.dart';
+import 'package:abilify/pages/continue_as.dart';
+import 'package:abilify/pages/ParentSide/parent_profile_edit.dart';
+import 'package:abilify/pages/ParentSide/parent_settings.dart';
 
 // Add imports for other pages that will be accessed from navigation bar
 // Add these as needed based on your file structure
@@ -61,6 +64,157 @@ class _Parent_hpage extends State<ParentHomePage> {
     }
   }
 
+  void _showProfileOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        padding: EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Profile section
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 30,
+                  backgroundImage: AssetImage(profile_img),
+                ),
+                SizedBox(width: 15),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      parent_name,
+                      style: GoogleFonts.poppins(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    Text(
+                      "Parent",
+                      style: GoogleFonts.poppins(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            
+            SizedBox(height: 30),
+            
+            // Options
+            ListTile(
+              leading: Icon(Icons.person, color: Color(0xFF9471E1)),
+              title: Text(
+                "Edit Profile",
+                style: GoogleFonts.poppins(fontSize: 16),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                navigateWithLoading(
+                  context,
+                  ParentProfileEdit(),
+                  () async {
+                    await Future.delayed(Duration(milliseconds: 500));
+                  },
+                );
+              },
+            ),
+            
+            ListTile(
+              leading: Icon(Icons.settings, color: Color(0xFF9471E1)),
+              title: Text(
+                "Settings",
+                style: GoogleFonts.poppins(fontSize: 16),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                navigateWithLoading(
+                  context,
+                  ParentSettings(),
+                  () async {
+                    await Future.delayed(Duration(milliseconds: 500));
+                  },
+                );
+              },
+            ),
+            
+            Divider(),
+            
+            // Sign Out option
+            ListTile(
+              leading: Icon(Icons.logout, color: Colors.red),
+              title: Text(
+                "Sign Out",
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  color: Colors.red,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context); // Close bottom sheet
+                // Show confirmation dialog
+                _confirmSignOut(context);
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+  
+  void _confirmSignOut(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          "Sign Out",
+          style: GoogleFonts.poppins(
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          "Are you sure you want to sign out?",
+          style: GoogleFonts.poppins(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              "Cancel",
+              style: GoogleFonts.poppins(color: Colors.grey[700]),
+            ),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Color(0xFF9471E1),
+            ),
+            onPressed: () {
+              Navigator.pop(context); // Close dialog
+              // Navigate to the continue_as page
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => ContinueAs()),
+                (route) => false, // This removes all routes from the stack
+              );
+            },
+            child: Text(
+              "Sign Out",
+              style: GoogleFonts.poppins(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final deviceWidth = getDevice_wh(context)[0];
@@ -99,12 +253,23 @@ class _Parent_hpage extends State<ParentHomePage> {
                           ),
                         ],
                       ),
-
-                      Padding(
-                        padding: const EdgeInsets.only(left: 30),
-                        child: SizedBox(
+                      
+                      Spacer(),
+                      GestureDetector(
+                        onTap: () => _showProfileOptions(context),
+                        child: Container(
                           width: 45,
                           height: 45,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 5,
+                                offset: Offset(0, 2),
+                              ),
+                            ],
+                          ),
                           child: ClipOval(
                             child: Image.asset(profile_img, fit: BoxFit.cover),
                           ),

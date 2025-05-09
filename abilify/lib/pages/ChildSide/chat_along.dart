@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:abilify/pages/ChildSide/child_chat_list.dart';
 
 class ChatAlong extends StatefulWidget {
   const ChatAlong({super.key});
@@ -155,10 +156,18 @@ class _ChatAlongState extends State<ChatAlong> {
                               ),
                             ],
                           ),
-                          child: Icon(
-                            Icons.chat_bubble,
-                            color: Colors.amber,
-                            size: 20,
+                          child: InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => ChildChatList()),
+                              );
+                            },
+                            child: Icon(
+                              Icons.people,
+                              color: Colors.amber,
+                              size: 20,
+                            ),
                           ),
                         ),
                       ],
@@ -205,6 +214,30 @@ class _ChatAlongState extends State<ChatAlong> {
                               style: GoogleFonts.poppins(
                                 fontSize: 16,
                                 color: Colors.black54,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 24),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => ChildChatList()),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.amber,
+                              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                            child: Text(
+                              'Chat with Friends',
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ),

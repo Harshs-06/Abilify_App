@@ -11,6 +11,9 @@ import 'package:abilify/pages/ParentSide/care_directory.dart';
 import 'package:abilify/pages/ParentSide/community_forum.dart';
 import 'package:abilify/pages/ParentSide/community_events.dart';
 import 'package:abilify/pages/ParentSide/chats.dart';
+import 'package:abilify/pages/ChildSide/child_chat_list.dart';
+import 'package:abilify/pages/ParentSide/parent_profile_edit.dart';
+import 'package:abilify/pages/ParentSide/parent_settings.dart';
 import 'package:abilify/pages/splash.dart';
 import 'package:abilify/services/user_data_provider.dart';
 import 'package:abilify/services/rewards_provider.dart';
@@ -55,6 +58,9 @@ class MyApp extends StatelessWidget {
         "/community_forum": (context) => CommunityForum(),
         "/community_events": (context) => CommunityEvents(),
         "/chats": (context) => Chats(),
+        "/child_chat_list": (context) => ChildChatList(),
+        "/parent_profile_edit": (context) => ParentProfileEdit(),
+        "/parent_settings": (context) => ParentSettings(),
       },
     );
   }
