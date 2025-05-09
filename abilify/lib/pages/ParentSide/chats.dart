@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:abilify/widgets/bottom_navigation.dart';
+import 'package:abilify/models/chat_model.dart';
+import 'package:abilify/pages/ParentSide/parent_chat_detail.dart';
+import 'package:intl/intl.dart';
 
 class Chats extends StatefulWidget {
   const Chats({Key? key}) : super(key: key);
@@ -11,6 +14,7 @@ class Chats extends StatefulWidget {
 
 class _ChatsState extends State<Chats> {
   int _currentIndex = 3; // Set to 3 for Chats tab
+  bool _showParents = true; // Toggle between Parents and Professionals
 
   void _onTabTapped(int index) {
     if (index != _currentIndex) {
@@ -45,29 +49,127 @@ class _ChatsState extends State<Chats> {
           ),
         ),
         centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.search, color: Colors.black),
+            onPressed: () {},
+          ),
+        ],
       ),
-      body: Center(
+      body: Column(
+        children: [
+          Container(
+            color: Colors.white,
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _showParents = true;
+                      });
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: _showParents ? Color(0xFF9471E1) : Colors.transparent,
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                      child: Text(
+                        'Parents',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: _showParents ? FontWeight.w600 : FontWeight.w500,
+                          color: _showParents ? Color(0xFF9471E1) : Colors.grey[600],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _showParents = false;
+                      });
+                    },
+                    child: Container(
+                      padding: EdgeInsets.symmetric(vertical: 8),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: BorderSide(
+                            color: !_showParents ? Color(0xFF9471E1) : Colors.transparent,
+                            width: 2,
+                          ),
+                        ),
+                      ),
+                      child: Text(
+                        'Professionals',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: !_showParents ? FontWeight.w600 : FontWeight.w500,
+                          color: !_showParents ? Color(0xFF9471E1) : Colors.grey[600],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          
+          Expanded(
+            child: _showParents 
+                ? _buildChatList(parentMockChats)
+                : _buildChatList(professionalMockChats),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {},
+        backgroundColor: Color(0xFF9471E1),
+        child: Icon(Icons.chat, color: Colors.white),
+      ),
+      bottomNavigationBar: AbilifyBottomNavBar(
+        currentIndex: _currentIndex,
+        onTap: _onTabTapped,
+      ),
+    );
+  }
+  
+  Widget _buildChatList(List<ChatConversation> chats) {
+    if (chats.isEmpty) {
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
               Icons.chat_bubble_outline,
-              size: 100,
+              size: 80,
               color: Color(0xFF9471E1),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 16),
             Text(
-              'Chats',
+              'No chats yet',
               style: GoogleFonts.poppins(
-                fontSize: 24,
+                fontSize: 22,
                 fontWeight: FontWeight.w600,
               ),
             ),
-            SizedBox(height: 10),
+            SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 40.0),
               child: Text(
-                'Chat with specialists, therapists, and other support professionals',
+                _showParents 
+                    ? 'Connect with other parents and professionals'
+                    : 'Connect with specialists and therapists',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.poppins(
                   fontSize: 16,
@@ -75,13 +177,169 @@ class _ChatsState extends State<Chats> {
                 ),
               ),
             ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {},
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Color(0xFF9471E1),
+                padding: EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              child: Text(
+                _showParents ? 'Find Connections' : 'Find Professionals',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      return ListView.builder(
+        itemCount: chats.length,
+        itemBuilder: (context, index) {
+          final chat = chats[index];
+          return _buildChatItem(context, chat);
+        },
+      );
+    }
+  }
+  
+  Widget _buildChatItem(BuildContext context, ChatConversation chat) {
+    final formattedTime = _formatLastMessageTime(chat.lastMessageTime);
+    
+    return InkWell(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ParentChatDetail(conversation: chat),
+          ),
+        );
+      },
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              color: Colors.grey.shade300,
+              width: 0.5,
+            ),
+          ),
+        ),
+        child: Row(
+          children: [
+            // Avatar
+            CircleAvatar(
+              radius: 24,
+              backgroundImage: chat.image != null
+                  ? AssetImage(chat.image!)
+                  : null,
+              backgroundColor: chat.image == null ? Color(0xFF9471E1) : null,
+              child: chat.image == null
+                  ? Text(
+                      chat.name[0],
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    )
+                  : null,
+            ),
+            SizedBox(width: 16),
+            
+            // Chat details
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        chat.name,
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: chat.isUnread
+                              ? FontWeight.bold
+                              : FontWeight.w500,
+                          color: Colors.black,
+                        ),
+                      ),
+                      Text(
+                        formattedTime,
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: chat.isUnread
+                              ? Color(0xFF9471E1)
+                              : Colors.grey[600],
+                          fontWeight: chat.isUnread
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          chat.lastMessage,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: chat.isUnread
+                                ? Colors.black87
+                                : Colors.grey[600],
+                            fontWeight: chat.isUnread
+                                ? FontWeight.w500
+                                : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                      if (chat.isUnread)
+                        Container(
+                          margin: EdgeInsets.only(left: 8),
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: Color(0xFF9471E1),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),
-      bottomNavigationBar: AbilifyBottomNavBar(
-        currentIndex: _currentIndex,
-        onTap: _onTabTapped,
-      ),
     );
+  }
+  
+  String _formatLastMessageTime(DateTime time) {
+    final now = DateTime.now();
+    final difference = now.difference(time);
+    
+    if (difference.inDays > 0) {
+      return DateFormat('dd/MM').format(time);
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}h ago';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}m ago';
+    } else {
+      return 'Just now';
+    }
   }
 } 
