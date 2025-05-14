@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:abilify/services/user_data_provider.dart';
+import 'package:abilify/services/auth_service.dart';
 
 class EditProfile extends StatefulWidget {
   final String initialName;
@@ -29,11 +31,15 @@ class _EditProfileState extends State<EditProfile> {
   String profileImagePath = '';
   bool isAssetImage = true;
   bool hasChanges = false;
+  final UserDataProvider _userDataProvider = UserDataProvider();
+  final AuthService _authService = AuthService();
   
   @override
   void initState() {
     super.initState();
-    nameController = TextEditingController(text: widget.initialName);
+    // Try to get the name from auth service first
+    String displayName = _authService.currentUser?.displayName ?? widget.initialName;
+    nameController = TextEditingController(text: displayName);
     ageController = TextEditingController(text: widget.initialAge);
     profileImagePath = widget.profileImage;
     
@@ -285,7 +291,7 @@ class _EditProfileState extends State<EditProfile> {
               
               // Save Button
               ElevatedButton(
-                onPressed: () {
+                onPressed: () async {
                   // Validate input
                   final name = nameController.text.trim();
                   final age = ageController.text.trim();
@@ -297,6 +303,26 @@ class _EditProfileState extends State<EditProfile> {
                     return;
                   }
                   
+                  // Update auth service with new display name
+                  if (_authService.currentUser != null && 
+                      name != (_authService.currentUser?.displayName ?? "")) {
+                    try {
+                      await _authService.updateUserProfile(displayName: name);
+                    } catch (e) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error updating profile: $e')),
+                      );
+                    }
+                  }
+                  
+                  // Update user data provider
+                  await _userDataProvider.updateProfile(
+                    name: name,
+                    age: age,
+                    image: isAssetImage ? profileImagePath : _imageFile!.path,
+                    isAsset: isAssetImage,
+                  );
+
                   // Return the updated profile data to previous screen
                   Navigator.pop(context, {
                     'name': name,

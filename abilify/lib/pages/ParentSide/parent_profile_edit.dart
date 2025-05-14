@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:abilify/customs/device_dimensions.dart';
+import 'package:abilify/services/auth_service.dart';
 
 class ParentProfileEdit extends StatefulWidget {
   const ParentProfileEdit({super.key});
@@ -11,7 +12,7 @@ class ParentProfileEdit extends StatefulWidget {
 
 class _ParentProfileEditState extends State<ParentProfileEdit> {
   // Form controllers
-  final TextEditingController _nameController = TextEditingController(text: "Palak");
+  late TextEditingController _nameController;
   final TextEditingController _emailController = TextEditingController(text: "palak@example.com");
   final TextEditingController _phoneController = TextEditingController(text: "+1 (555) 123-4567");
   final TextEditingController _childNameController = TextEditingController(text: "Jai");
@@ -19,6 +20,16 @@ class _ParentProfileEditState extends State<ParentProfileEdit> {
   
   final String profileImg = "assets/profile_p2.png";
   bool _isLoading = false;
+  final AuthService _authService = AuthService();
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize name controller with user's display name
+    _nameController = TextEditingController(
+      text: _authService.currentUser?.displayName ?? "Palak"
+    );
+  }
 
   @override
   void dispose() {
@@ -35,6 +46,14 @@ class _ParentProfileEditState extends State<ParentProfileEdit> {
     setState(() {
       _isLoading = true;
     });
+
+    // Get updated values
+    final String name = _nameController.text.trim();
+    
+    // Update auth user profile if name has changed
+    if (name != (_authService.currentUser?.displayName ?? "")) {
+      _authService.updateUserProfile(displayName: name);
+    }
 
     // Simulate saving profile
     Future.delayed(Duration(seconds: 1), () {

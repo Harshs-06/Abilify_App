@@ -1,6 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
 
-class RewardsProvider {
+class RewardsProvider with ChangeNotifier {
   static final RewardsProvider _instance = RewardsProvider._internal();
   
   factory RewardsProvider() {
@@ -24,6 +25,7 @@ class RewardsProvider {
       
       _points = prefs.getInt('rewardPoints') ?? 100; // Start with 100 points
       _purchasedItems = prefs.getStringList('purchasedItems') ?? [];
+      notifyListeners();
     } catch (e) {
       print('Error initializing rewards data: $e');
     }
@@ -33,6 +35,7 @@ class RewardsProvider {
   Future<void> addPoints(int amount) async {
     _points += amount;
     await _saveData();
+    notifyListeners();
   }
   
   // Spend points
@@ -43,6 +46,7 @@ class RewardsProvider {
     
     _points -= amount;
     await _saveData();
+    notifyListeners();
     return true;
   }
   
@@ -51,6 +55,7 @@ class RewardsProvider {
     if (!_purchasedItems.contains(itemId)) {
       _purchasedItems.add(itemId);
       await _saveData();
+      notifyListeners();
     }
   }
   
@@ -64,6 +69,7 @@ class RewardsProvider {
     _purchasedItems = [];
     _points = 100; // Reset to 100 points
     await _saveData();
+    notifyListeners();
   }
   
   // Save data to SharedPreferences
