@@ -12,9 +12,6 @@ class ContinueAs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final parentName = "Palak";
-    final childName = "Jade";
-    
     return Scaffold(
       backgroundColor: Color.fromARGB(255, 251, 239, 215),
       body: SafeArea(
@@ -48,7 +45,7 @@ class ContinueAs extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Parent Profile (Palak)
+                      // Parent Profile
                       Column(
                         children: [
                           GestureDetector(
@@ -87,17 +84,17 @@ class ContinueAs extends StatelessWidget {
                           ),
                           SizedBox(height: 16),
                           Text(
-                            parentName,
+                            'Parent',
                             style: GoogleFonts.poppins(
-                              fontSize: 28,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                              color: Colors.black87,
                             ),
                           ),
                         ],
                       ),
-                      SizedBox(width: 60),
-                      // Child Profile (Jade)
+                      SizedBox(width: 40),
+                      // Child Profile
                       Column(
                         children: [
                           GestureDetector(
@@ -117,7 +114,7 @@ class ContinueAs extends StatelessWidget {
                               height: 150,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
-                                color: Colors.blue.shade300,
+                                color: Colors.amber.shade300,
                                 boxShadow: [
                                   BoxShadow(
                                     color: Colors.black.withOpacity(0.2),
@@ -136,11 +133,11 @@ class ContinueAs extends StatelessWidget {
                           ),
                           SizedBox(height: 16),
                           Text(
-                            childName,
+                            'Child',
                             style: GoogleFonts.poppins(
-                              fontSize: 28,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold,
-                              color: Colors.black,
+                              color: Colors.black87,
                             ),
                           ),
                         ],

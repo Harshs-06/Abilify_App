@@ -1,6 +1,7 @@
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
 
-class UserDataProvider {
+class UserDataProvider with ChangeNotifier {
   static final UserDataProvider _instance = UserDataProvider._internal();
   
   factory UserDataProvider() {
@@ -30,6 +31,7 @@ class UserDataProvider {
       _childAge = prefs.getString('childAge') ?? '8';
       _profileImage = prefs.getString('profileImage') ?? 'assets/child_pf.png';
       _isAssetImage = prefs.getBool('isAssetImage') ?? true;
+      notifyListeners();
     } catch (e) {
       print('Error initializing user data: $e');
     }
@@ -54,6 +56,7 @@ class UserDataProvider {
       await prefs.setString('childAge', _childAge);
       await prefs.setString('profileImage', _profileImage);
       await prefs.setBool('isAssetImage', _isAssetImage);
+      notifyListeners();
     } catch (e) {
       print('Error saving user data: $e');
     }

@@ -12,6 +12,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 import 'package:abilify/services/user_data_provider.dart';
+import 'package:abilify/services/auth_service.dart';
 
 class ChildHomePage extends StatefulWidget{
   const ChildHomePage({super.key});
@@ -30,6 +31,7 @@ class _ChildHomeState extends State<ChildHomePage>{
   ];
   
   final UserDataProvider _userDataProvider = UserDataProvider();
+  final AuthService _authService = AuthService();
   late String childName;
   late String profileImage;
   late bool isAssetImage;
@@ -41,7 +43,7 @@ class _ChildHomeState extends State<ChildHomePage>{
   }
   
   void loadUserData() {
-    childName = _userDataProvider.childName;
+    childName = _authService.currentUser?.displayName ?? _userDataProvider.childName;
     profileImage = _userDataProvider.profileImage;
     isAssetImage = _userDataProvider.isAssetImage;
   }

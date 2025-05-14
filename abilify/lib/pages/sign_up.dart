@@ -5,9 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:abilify/pages/ChildSide/child_home_page.dart';
 import 'package:abilify/pages/ParentSide/parent_home_page.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:abilify/services/auth_service.dart';
 
 class SignIn extends StatefulWidget {
-  const SignIn({super.key});
+  final String userType;
+  
+  const SignIn({super.key, this.userType = 'parent'});
 
   @override
   _SignInState createState() => _SignInState();
@@ -17,8 +20,11 @@ class _SignInState extends State<SignIn> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController usernameController = TextEditingController();
+  final AuthService _authService = AuthService();
   bool isButtonEnabled = false;
   bool obscureText = true;
+  String? _errorMessage;
+  bool _isLoading = false;
 
   void _togglePasswordVisibility() {
     if (passwordController.text.isNotEmpty) {
@@ -31,8 +37,66 @@ class _SignInState extends State<SignIn> {
   void _checkInput() {
     setState(() {
       isButtonEnabled =
-          emailController.text.isNotEmpty && passwordController.text.isNotEmpty && usernameController.text.isNotEmpty;
+          emailController.text.isNotEmpty && 
+          passwordController.text.isNotEmpty && 
+          usernameController.text.isNotEmpty;
     });
+  }
+  
+  bool _isValidEmail(String email) {
+    return email.toLowerCase().endsWith('@gmail.com');
+  }
+  
+  Future<void> _signUp() async {
+    // First check if email format is valid
+    if (!_isValidEmail(emailController.text.trim())) {
+      setState(() {
+        _errorMessage = 'Email must end with @gmail.com';
+      });
+      return;
+    }
+    
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final email = emailController.text.trim();
+      final password = passwordController.text.trim();
+      final displayName = usernameController.text.trim();
+      
+      final user = await _authService.createUserWithEmailAndPassword(
+        email,
+        password,
+        displayName: displayName,
+      );
+      
+      if (user != null) {
+        // Navigate to the appropriate home page based on user type
+        if (widget.userType == 'parent') {
+          Navigator.pushReplacement(
+            context, 
+            MaterialPageRoute(builder: (context) => const ParentHomePage()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context, 
+            MaterialPageRoute(builder: (context) => const ChildHomePage()),
+          );
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -179,7 +243,7 @@ class _SignInState extends State<SignIn> {
                   controller: emailController,
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
-                    hintText: 'Email',
+                    hintText: 'Email (@gmail.com)',
                     hintStyle: GoogleFonts.poppins(
                       color: Colors.grey,
                       fontSize: 16,
@@ -232,20 +296,19 @@ class _SignInState extends State<SignIn> {
                   ),
                 ),
               ),
+              if (_errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10.0),
+                  child: Text(
+                    _errorMessage!,
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
               SizedBox(height: 30),
               
               // Sign Up Button
               ElevatedButton(
-                onPressed: isButtonEnabled 
-                    ? () {
-                        Navigator.push(
-                          context, 
-                          MaterialPageRoute(
-                            builder: (context) => ChildHomePage()
-                          ),
-                        );
-                      } 
-                    : null,
+                onPressed: isButtonEnabled ? (_isLoading ? null : _signUp) : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Color(0xFFFE8668), // Coral color
                   disabledBackgroundColor: Color(0xFFFE8668).withOpacity(0.6),
@@ -255,14 +318,16 @@ class _SignInState extends State<SignIn> {
                   ),
                   elevation: 0,
                 ),
-                child: Text(
-                  'Sign Up',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: _isLoading
+                  ? CircularProgressIndicator(color: Colors.white)
+                  : Text(
+                      'Sign Up',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
               ),
               
               Spacer(),
@@ -290,7 +355,7 @@ class _SignInState extends State<SignIn> {
                           ..onTap = () {
                             Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (context) => Login())
+                              MaterialPageRoute(builder: (context) => Login(userType: widget.userType))
                             );
                           },
                       ),

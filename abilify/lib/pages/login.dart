@@ -1,16 +1,14 @@
 import 'package:abilify/pages/sign_up.dart';
-import 'package:abilify/pages/continue_as.dart';
 import 'package:abilify/pages/ChildSide/child_home_page.dart';
 import 'package:abilify/pages/ParentSide/parent_home_page.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:abilify/services/auth_service.dart'; 
 
 class Login extends StatefulWidget {
   final String userType;
-  
+
   const Login({super.key, this.userType = 'parent'});
 
   @override
@@ -22,6 +20,9 @@ class _LoginState extends State<Login> {
   final TextEditingController passwordController = TextEditingController();
   bool isButtonEnabled = false;
   bool obscureText = true;
+  final AuthService _authService = AuthService();
+  String? _errorMessage;
+  bool _isLoading = false;
 
   void _togglePasswordVisibility() {
     if (passwordController.text.isNotEmpty) {
@@ -34,8 +35,59 @@ class _LoginState extends State<Login> {
   void _checkInput() {
     setState(() {
       isButtonEnabled =
-          emailController.text.isNotEmpty && passwordController.text.isNotEmpty;
+          emailController.text.isNotEmpty && 
+          passwordController.text.isNotEmpty;
     });
+  }
+  
+  bool _isValidEmail(String email) {
+    return email.toLowerCase().endsWith('@gmail.com');
+  }
+
+  Future<void> _login() async {
+    // First check if email format is valid
+    if (!_isValidEmail(emailController.text.trim())) {
+      setState(() {
+        _errorMessage = 'Email must end with @gmail.com';
+      });
+      return;
+    }
+    
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final email = emailController.text.trim();
+      final password = passwordController.text.trim();
+      
+      final user = await _authService.signInWithEmailAndPassword(email, password);
+      
+      if (user != null) {
+        if (widget.userType == 'parent') {
+          Navigator.pushReplacement(
+            context, 
+            MaterialPageRoute(builder: (context) => const ParentHomePage()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context, 
+            MaterialPageRoute(builder: (context) => const ChildHomePage()),
+          );
+        }
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = e.toString();
+      });
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -56,21 +108,18 @@ class _LoginState extends State<Login> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: Color.fromARGB(255, 251, 239, 215),
+      backgroundColor: const Color.fromARGB(255, 251, 239, 215),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Add spacing at the top to push content down
-              SizedBox(height: 60),
-              
-              // Logo and family icon
+              const SizedBox(height: 60),
               Container(
                 width: 200,
                 height: 200,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   shape: BoxShape.circle,
                   color: Colors.white,
                 ),
@@ -88,7 +137,7 @@ class _LoginState extends State<Login> {
                       child: Container(
                         width: 40,
                         height: 40,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           shape: BoxShape.circle,
                           color: Colors.amber,
                         ),
@@ -100,7 +149,7 @@ class _LoginState extends State<Login> {
                       child: Container(
                         width: 15,
                         height: 15,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           shape: BoxShape.circle,
                           color: Colors.amber,
                         ),
@@ -112,7 +161,7 @@ class _LoginState extends State<Login> {
                       child: Container(
                         width: 15,
                         height: 15,
-                        decoration: BoxDecoration(
+                        decoration: const BoxDecoration(
                           shape: BoxShape.circle,
                           color: Colors.amber,
                         ),
@@ -121,9 +170,7 @@ class _LoginState extends State<Login> {
                   ],
                 ),
               ),
-              SizedBox(height: 40),
-              
-              // Welcome text
+              const SizedBox(height: 40),
               Text(
                 'Welcome to abilify!',
                 style: GoogleFonts.poppins(
@@ -133,9 +180,7 @@ class _LoginState extends State<Login> {
                 ),
                 textAlign: TextAlign.center,
               ),
-              SizedBox(height: 60),
-              
-              // Email Field
+              const SizedBox(height: 60),
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -145,12 +190,12 @@ class _LoginState extends State<Login> {
                   controller: emailController,
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
-                    hintText: 'Email',
+                    hintText: 'Email (@gmail.com)',
                     hintStyle: GoogleFonts.poppins(
                       color: Colors.grey,
                       fontSize: 16,
                     ),
-                    prefixIcon: Icon(
+                    prefixIcon: const Icon(
                       Icons.email_outlined,
                       color: Colors.grey,
                     ),
@@ -158,13 +203,11 @@ class _LoginState extends State<Login> {
                       borderRadius: BorderRadius.circular(30),
                       borderSide: BorderSide.none,
                     ),
-                    contentPadding: EdgeInsets.symmetric(vertical: 18),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 18),
                   ),
                 ),
               ),
-              SizedBox(height: 16),
-              
-              // Password Field
+              const SizedBox(height: 16),
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -179,13 +222,15 @@ class _LoginState extends State<Login> {
                       color: Colors.grey,
                       fontSize: 16,
                     ),
-                    prefixIcon: Icon(
+                    prefixIcon: const Icon(
                       Icons.lock_outline,
                       color: Colors.grey,
                     ),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        obscureText ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+                        obscureText
+                            ? Icons.visibility_outlined
+                            : Icons.visibility_off_outlined,
                         color: Colors.grey,
                       ),
                       onPressed: _togglePasswordVisibility,
@@ -194,58 +239,45 @@ class _LoginState extends State<Login> {
                       borderRadius: BorderRadius.circular(30),
                       borderSide: BorderSide.none,
                     ),
-                    contentPadding: EdgeInsets.symmetric(vertical: 18),
+                    contentPadding: const EdgeInsets.symmetric(vertical: 18),
                   ),
                 ),
               ),
-              SizedBox(height: 30),
-              
-              // Login Button - Updated color to match sign up button
+              if (_errorMessage != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 10.0),
+                  child: Text(
+                    _errorMessage!,
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
+              const SizedBox(height: 30),
               ElevatedButton(
-                onPressed: isButtonEnabled
-                    ? () {
-                        // Navigate based on user type
-                        if (widget.userType == 'parent') {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ParentHomePage(),
-                            ),
-                          );
-                        } else {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => ChildHomePage(),
-                            ),
-                          );
-                        }
-                      }
-                    : null,
+                onPressed: isButtonEnabled ? (_isLoading ? null : _login) : null,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Color(0xFFFE8668), // Coral color to match signup
-                  disabledBackgroundColor: Color(0xFFFE8668).withOpacity(0.6),
-                  minimumSize: Size(double.infinity, 55),
+                  backgroundColor: const Color(0xFFFE8668),
+                  disabledBackgroundColor: const Color(0xFFFE8668).withOpacity(0.6),
+                  minimumSize: const Size(double.infinity, 55),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30),
                   ),
                   elevation: 0,
                 ),
-                child: Text(
-                  'LOGIN',
-                  style: GoogleFonts.poppins(
-                    color: Colors.white, // Changed to white to match signup
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: _isLoading 
+                  ? CircularProgressIndicator(color: Colors.white)
+                  : Text(
+                      'LOGIN',
+                      style: GoogleFonts.poppins(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
               ),
-              SizedBox(height: 20),
-              
-              // Forgot Password
+              const SizedBox(height: 20),
               GestureDetector(
                 onTap: () {
-                  // Forgot password functionality can be added here
+                  // Implement forgot password logic here
                 },
                 child: Text(
                   'Forgot Password?',
@@ -255,10 +287,7 @@ class _LoginState extends State<Login> {
                   ),
                 ),
               ),
-              
-              Spacer(),
-              
-              // Sign Up Text
+              const Spacer(),
               Padding(
                 padding: const EdgeInsets.only(bottom: 30.0),
                 child: RichText(
@@ -268,9 +297,7 @@ class _LoginState extends State<Login> {
                       color: Colors.black54,
                     ),
                     children: [
-                      TextSpan(
-                        text: "Don't have an account? ",
-                      ),
+                      const TextSpan(text: "Don't have an account? "),
                       TextSpan(
                         text: 'Sign Up',
                         style: GoogleFonts.poppins(
@@ -282,7 +309,7 @@ class _LoginState extends State<Login> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => SignIn(),
+                                builder: (context) => SignIn(userType: widget.userType),
                               ),
                             );
                           },

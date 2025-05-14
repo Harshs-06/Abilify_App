@@ -9,6 +9,10 @@ import 'package:abilify/pages/ParentSide/community_events.dart';
 import 'package:abilify/pages/continue_as.dart';
 import 'package:abilify/pages/ParentSide/parent_profile_edit.dart';
 import 'package:abilify/pages/ParentSide/parent_settings.dart';
+import 'package:abilify/pages/ParentSide/service_directory.dart';
+import 'package:abilify/pages/ParentSide/community_forum.dart';
+import 'package:abilify/pages/ParentSide/chats.dart';
+import 'package:abilify/services/auth_service.dart';
 
 // Add imports for other pages that will be accessed from navigation bar
 // Add these as needed based on your file structure
@@ -26,7 +30,8 @@ class ParentHomePage extends StatefulWidget {
 }
 
 class _Parent_hpage extends State<ParentHomePage> {
-  final String parent_name = "Palak";
+  final AuthService _authService = AuthService();
+  late String parent_name;
   final String child_name = "Jai";
   int _currentIndex = 0;
 
@@ -43,6 +48,13 @@ class _Parent_hpage extends State<ParentHomePage> {
 
   String? selectedPath;
 
+  @override
+  void initState() {
+    super.initState();
+    // Get the display name from auth service or default to "Palak"
+    parent_name = _authService.currentUser?.displayName ?? "Palak";
+  }
+
   void _onTabTapped(int index) {
     if (index != _currentIndex) {
       setState(() {
@@ -51,6 +63,9 @@ class _Parent_hpage extends State<ParentHomePage> {
       
       // Navigate to different pages based on tab index
       switch (index) {
+        case 0:
+          // Already on home page
+          break;
         case 1:
           Navigator.pushReplacementNamed(context, '/service_directory');
           break;
@@ -443,17 +458,101 @@ class _Parent_hpage extends State<ParentHomePage> {
                       actionsButton(
                         "Polls & Discussions",
                         "assets/pollsicon.png",
-                        () {},
+                        () {
+                          // Show a dialog that this feature is coming soon
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: Text(
+                                "Coming Soon",
+                                style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              content: Text(
+                                "Polls & Discussions feature will be available in the next update!",
+                                style: GoogleFonts.poppins(),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: Text(
+                                    "OK",
+                                    style: GoogleFonts.poppins(
+                                      color: Color(0xFF9471E1),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                       ),
                       actionsButton(
                         "Progress Tracking",
                         "assets/progressicon.png",
-                        () {},
+                        () {
+                          // Show a dialog that this feature is coming soon
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: Text(
+                                "Coming Soon",
+                                style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              content: Text(
+                                "Progress Tracking feature will be available in the next update!",
+                                style: GoogleFonts.poppins(),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: Text(
+                                    "OK",
+                                    style: GoogleFonts.poppins(
+                                      color: Color(0xFF9471E1),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                       ),
                       actionsButton(
                         "Buddy Program",
                         "assets/buddyicon.png",
-                        () {},
+                        () {
+                          // Show a dialog that this feature is coming soon
+                          showDialog(
+                            context: context,
+                            builder: (context) => AlertDialog(
+                              title: Text(
+                                "Coming Soon",
+                                style: GoogleFonts.poppins(
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              content: Text(
+                                "Buddy Program feature will be available in the next update!",
+                                style: GoogleFonts.poppins(),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  child: Text(
+                                    "OK",
+                                    style: GoogleFonts.poppins(
+                                      color: Color(0xFF9471E1),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                       ),
                     ],
                   ),

@@ -3,6 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:abilify/services/local_data_service.dart';
+import 'package:provider/provider.dart';
 
 class CreativeCorner extends StatefulWidget {
   const CreativeCorner({super.key});
@@ -15,40 +17,10 @@ class _CreativeCornerState extends State<CreativeCorner> {
   int _selectedCategoryIndex = 0;
   final TextEditingController _postController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
+  bool _isLoading = false;
   
-  // Posts data with mutable likes and comments
-  List<Map<String, dynamic>> _posts = [
-    {
-      'childName': 'Jade',
-      'timePosted': 'Today, 2:30 PM',
-      'content': 'I drew this picture of my family at the park!',
-      'imagePath': 'assets/story_time.png',
-      'isAsset': true,
-      'likes': 15,
-      'likedByMe': false,
-      'comments': 4,
-    },
-    {
-      'childName': 'Sammy',
-      'timePosted': 'Yesterday, 5:15 PM',
-      'content': 'My clay animal collection I made in art class!',
-      'imagePath': 'assets/story_time.png',
-      'isAsset': true,
-      'likes': 23,
-      'likedByMe': false,
-      'comments': 7,
-    },
-    {
-      'childName': 'Leo',
-      'timePosted': 'Monday, 4:45 PM',
-      'content': 'My favorite drawing of the week - space adventure!',
-      'imagePath': 'assets/story_time.png',
-      'isAsset': true,
-      'likes': 32,
-      'likedByMe': false,
-      'comments': 12,
-    },
-  ];
+  // Posts will be loaded from LocalDataService
+  List<Map<String, dynamic>> _posts = [];
   
   final List<Map<String, dynamic>> _categories = [
     {
@@ -78,10 +50,39 @@ class _CreativeCornerState extends State<CreativeCorner> {
     },
   ];
 
+  @override
+  void initState() {
+    super.initState();
+    _loadPosts();
+  }
+
+  void _loadPosts() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    // Get the LocalDataService instance
+    final LocalDataService dataService = Provider.of<LocalDataService>(context, listen: false);
+    
+    try {
+      // Load creative corner posts
+      await dataService.init();
+      setState(() {
+        _posts = dataService.creativeCornerPosts;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading artwork: $e')),
+      );
+    }
+  }
+
   void _showAddPostDialog() {
-    String? selectedImagePath;
     File? selectedImageFile;
-    bool isAsset = true;
     
     showDialog(
       context: context,
@@ -141,8 +142,6 @@ class _CreativeCornerState extends State<CreativeCorner> {
                               if (image != null) {
                                 setState(() {
                                   selectedImageFile = File(image.path);
-                                  selectedImagePath = image.path;
-                                  isAsset = false;
                                 });
                               }
                             } catch (e) {
@@ -205,8 +204,8 @@ class _CreativeCornerState extends State<CreativeCorner> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    if (_postController.text.isNotEmpty && selectedImagePath != null) {
-                      _addNewPost(_postController.text, selectedImagePath, isAsset);
+                    if (_postController.text.isNotEmpty && selectedImageFile != null) {
+                      _addNewPost(_postController.text, selectedImageFile!);
                       Navigator.of(context).pop();
                       _postController.clear();
                       
@@ -247,30 +246,56 @@ class _CreativeCornerState extends State<CreativeCorner> {
     );
   }
   
-  void _addNewPost(String content, String? imagePath, bool isAsset) {
+  void _addNewPost(String content, File imageFile) async {
     setState(() {
-      _posts.insert(0, {
-        'childName': 'Me',
-        'timePosted': 'Just now',
-        'content': content,
-        'imagePath': imagePath,
-        'isAsset': isAsset,
-        'likes': 0,
-        'likedByMe': false,
-        'comments': 0,
-      });
+      _isLoading = true;
     });
+    
+    // Get the LocalDataService instance
+    final LocalDataService dataService = Provider.of<LocalDataService>(context, listen: false);
+    
+    try {
+      // Add the post to local storage
+      await dataService.addCreativeCornerPost(content, imageFile);
+      
+      // Refresh the posts list
+      setState(() {
+        _posts = dataService.creativeCornerPosts;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error adding artwork: $e'),
+          backgroundColor: Colors.red.shade300,
+        ),
+      );
+    }
   }
   
-  void _toggleLike(int index) {
-    setState(() {
-      if (_posts[index]['likedByMe']) {
-        _posts[index]['likes'] = _posts[index]['likes'] - 1;
-      } else {
-        _posts[index]['likes'] = _posts[index]['likes'] + 1;
-      }
-      _posts[index]['likedByMe'] = !_posts[index]['likedByMe'];
-    });
+  void _toggleLike(int index) async {
+    // Get the LocalDataService instance
+    final LocalDataService dataService = Provider.of<LocalDataService>(context, listen: false);
+    
+    try {
+      // Toggle like in local storage
+      await dataService.toggleCreativeCornerPostLike(_posts[index]['id']);
+      
+      // Refresh the posts list
+      setState(() {
+        _posts = dataService.creativeCornerPosts;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error liking artwork: $e'),
+          backgroundColor: Colors.red.shade300,
+        ),
+      );
+    }
   }
 
   @override
@@ -278,292 +303,356 @@ class _CreativeCornerState extends State<CreativeCorner> {
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 251, 239, 215),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              // Header section with gradient background
-              Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.blue.shade300,
-                      Color.fromARGB(255, 251, 239, 215),
-                    ],
+        child: _isLoading
+          ? Center(
+              child: CircularProgressIndicator(
+                color: Colors.blue.shade400,
+              ),
+            )
+          : SingleChildScrollView(
+            child: Column(
+              children: [
+                // Header section with gradient background
+                Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.blue.shade300,
+                        Color.fromARGB(255, 251, 239, 215),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(30),
+                      bottomRight: Radius.circular(30),
+                    ),
                   ),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(30),
-                    bottomRight: Radius.circular(30),
-                  ),
-                ),
-                padding: EdgeInsets.only(top: 16, bottom: 25),
-                child: Column(
-                  children: [
-                    // App bar with back button and title
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Row(
-                        children: [
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 8,
-                                  offset: Offset(0, 2),
+                  padding: EdgeInsets.only(top: 16, bottom: 25),
+                  child: Column(
+                    children: [
+                      // App bar with back button and title
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                        child: Row(
+                          children: [
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 8,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: IconButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                icon: Icon(
+                                  Icons.arrow_back,
+                                  color: Colors.black,
+                                  size: 24.0,
+                                ),
+                              ),
+                            ),
+                            SizedBox(width: 16),
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.brush,
+                                  color: Colors.blue[600],
+                                  size: 28,
+                                ),
+                                const SizedBox(width: 10),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Creative Corner',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                    Text(
+                                      'Share your creations with friends!',
+                                      style: GoogleFonts.poppins(
+                                        fontSize: 12,
+                                        color: Colors.black87,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ),
-                            child: IconButton(
-                              onPressed: () => Navigator.of(context).pop(),
-                              icon: Icon(
-                                Icons.arrow_back,
-                                color: Colors.black,
-                                size: 24.0,
+                            
+                            Spacer(),
+                            Container(
+                              padding: EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 8,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                Icons.palette,
+                                color: Colors.blue,
+                                size: 20,
                               ),
                             ),
-                          ),
-                          SizedBox(width: 16),
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.brush,
-                                color: Colors.blue[600],
-                                size: 28,
+                          ],
+                        ),
+                      ),
+                      
+                      // Search bar
+                      Container(
+                        margin: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                        padding: EdgeInsets.symmetric(horizontal: 16),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(25),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.05),
+                              blurRadius: 8,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.search,
+                              color: Colors.blue,
+                            ),
+                            SizedBox(width: 10),
+                            Expanded(
+                              child: TextField(
+                                decoration: InputDecoration(
+                                  hintText: 'Search for drawings, crafts...',
+                                  hintStyle: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    color: Colors.grey.shade500,
+                                  ),
+                                  border: InputBorder.none,
+                                ),
                               ),
-                              const SizedBox(width: 10),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                SizedBox(height: 16),
+                
+                // Categories
+                Container(
+                  height: 115,
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _categories.length,
+                    itemExtent: 85,
+                    padding: EdgeInsets.symmetric(horizontal: 10),
+                    itemBuilder: (context, index) {
+                      return GestureDetector(
+                        onTap: () {
+                          setState(() {
+                            _selectedCategoryIndex = index;
+                          });
+                          
+                          // Handle Add button tap
+                          if (index == 0) {
+                            _showAddPostDialog();
+                          }
+                        },
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 64,
+                              height: 64,
+                              decoration: BoxDecoration(
+                                color: _categories[index]['color'],
+                                shape: BoxShape.circle,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.1),
+                                    blurRadius: 4,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Icon(
+                                _categories[index]['icon'],
+                                color: Colors.white,
+                                size: 30,
+                              ),
+                            ),
+                            SizedBox(height: 6),
+                            Text(
+                              _categories[index]['label'],
+                              style: GoogleFonts.poppins(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ),
+                
+                // Create post area
+                GestureDetector(
+                  onTap: _showAddPostDialog,
+                  child: Container(
+                    margin: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                    padding: EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 8,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 20,
+                          backgroundColor: Colors.orange.shade200,
+                          child: Icon(
+                            Icons.brush,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Share your artwork here...',
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              color: Colors.grey.shade400,
+                            ),
+                          ),
+                        ),
+                        Icon(
+                          Icons.add_photo_alternate_outlined,
+                          color: Colors.blue.shade300,
+                          size: 28,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                
+                // Posts grid
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16.0),
+                        child: Text(
+                          'Recent Artwork',
+                          style: GoogleFonts.poppins(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                      ),
+                      
+                      _posts.isEmpty
+                        ? Center(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 50.0),
+                              child: Column(
                                 children: [
+                                  Icon(
+                                    Icons.brush,
+                                    size: 60,
+                                    color: Colors.grey,
+                                  ),
+                                  SizedBox(height: 16),
                                   Text(
-                                    'Creative Corner',
+                                    'No artwork yet',
                                     style: GoogleFonts.poppins(
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.grey,
                                     ),
                                   ),
+                                  SizedBox(height: 8),
                                   Text(
-                                    'Share your creations with friends!',
+                                    'Be the first to share your creative artwork!',
+                                    textAlign: TextAlign.center,
                                     style: GoogleFonts.poppins(
-                                      fontSize: 12,
-                                      color: Colors.black87,
-                                      fontWeight: FontWeight.w500,
+                                      fontSize: 14,
+                                      color: Colors.grey,
                                     ),
                                   ),
                                 ],
                               ),
-                            ],
-                          ),
-                          
-                          Spacer(),
-                          Container(
-                            padding: EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 8,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
                             ),
-                            child: Icon(
-                              Icons.palette,
-                              color: Colors.blue,
-                              size: 20,
+                          )
+                        : GridView.builder(
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 2,
+                              childAspectRatio: 0.75,
+                              crossAxisSpacing: 15,
+                              mainAxisSpacing: 15,
                             ),
+                            itemCount: _posts.length,
+                            itemBuilder: (context, index) {
+                              final post = _posts[index];
+                              return _buildArtworkCard(
+                                index: index,
+                                childName: post['childName'],
+                                timePosted: post['timePosted'],
+                                content: post['content'],
+                                imagePath: post['imagePath'],
+                                isAsset: post['isAsset'] ?? false,
+                                likes: post['likes'],
+                                likedByMe: post['likedByMe'],
+                                comments: post['comments'],
+                              );
+                            },
                           ),
-                        ],
-                      ),
-                    ),
-                    
-                    // Search bar
-                    Container(
-                      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-                      padding: EdgeInsets.symmetric(horizontal: 16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(25),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 8,
-                            offset: Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.search,
-                            color: Colors.blue,
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: TextField(
-                              decoration: InputDecoration(
-                                hintText: 'Search for drawings, crafts...',
-                                hintStyle: GoogleFonts.poppins(
-                                  fontSize: 14,
-                                  color: Colors.grey.shade500,
-                                ),
-                                border: InputBorder.none,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              
-              SizedBox(height: 16),
-              
-              // Categories
-              Container(
-                height: 115,
-                padding: EdgeInsets.symmetric(vertical: 8),
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: _categories.length,
-                  itemExtent: 85,
-                  padding: EdgeInsets.symmetric(horizontal: 10),
-                  itemBuilder: (context, index) {
-                    return GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _selectedCategoryIndex = index;
-                        });
-                        
-                        // Handle Add button tap
-                        if (index == 0) {
-                          _showAddPostDialog();
-                        }
-                      },
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 64,
-                            height: 64,
-                            decoration: BoxDecoration(
-                              color: _categories[index]['color'],
-                              shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 4,
-                                  offset: Offset(0, 2),
-                                ),
-                              ],
-                            ),
-                            child: Icon(
-                              _categories[index]['icon'],
-                              color: Colors.white,
-                              size: 30,
-                            ),
-                          ),
-                          SizedBox(height: 6),
-                          Text(
-                            _categories[index]['label'],
-                            style: GoogleFonts.poppins(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ),
-              
-              // Create post area
-              GestureDetector(
-                onTap: _showAddPostDialog,
-                child: Container(
-                  margin: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                  padding: EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 8,
-                        offset: Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      CircleAvatar(
-                        radius: 25,
-                        backgroundColor: Colors.amber.shade200,
-                        child: Icon(
-                          Icons.person,
-                          color: Colors.amber.shade800,
-                          size: 28,
-                        ),
-                      ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: Text(
-                          'Share your artwork...',
-                          style: GoogleFonts.poppins(
-                            fontSize: 16,
-                            color: Colors.grey.shade500,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        padding: EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade100,
-                          shape: BoxShape.circle,
-                        ),
-                        child: Icon(
-                          Icons.add_photo_alternate,
-                          color: Colors.blue,
-                        ),
-                      ),
+                      
+                      SizedBox(height: 50),
                     ],
                   ),
                 ),
-              ),
-              
-              // Posts
-              for (int i = 0; i < _posts.length; i++) ...[
-                _buildCreativePost(
-                  index: i,
-                  childName: _posts[i]['childName'],
-                  timePosted: _posts[i]['timePosted'],
-                  content: _posts[i]['content'],
-                  imagePath: _posts[i]['imagePath'],
-                  isAsset: _posts[i]['isAsset'],
-                  likes: _posts[i]['likes'],
-                  comments: _posts[i]['comments'],
-                  isLiked: _posts[i]['likedByMe'],
-                ),
-                SizedBox(height: 12),
               ],
-              
-              SizedBox(height: 30),
-            ],
+            ),
           ),
-        ),
       ),
     );
   }
-  
-  Widget _buildCreativePost({
+
+  Widget _buildArtworkCard({
     required int index,
     required String childName,
     required String timePosted,
@@ -571,14 +660,13 @@ class _CreativeCornerState extends State<CreativeCorner> {
     required String imagePath,
     required bool isAsset,
     required int likes,
+    required bool likedByMe,
     required int comments,
-    required bool isLiked,
   }) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -587,170 +675,138 @@ class _CreativeCornerState extends State<CreativeCorner> {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Post header with profile pic and name
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 24,
-                  backgroundColor: Colors.amber.shade200,
-                  child: Text(
-                    childName[0],
-                    style: GoogleFonts.poppins(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      color: Colors.amber.shade800,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(15),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Artwork image
+            Expanded(
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  isAsset
+                    ? Image.asset(
+                        imagePath,
+                        fit: BoxFit.cover,
+                      )
+                    : Image.file(
+                        File(imagePath),
+                        fit: BoxFit.cover,
+                      ),
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: Container(
+                      padding: EdgeInsets.all(5),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 4,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Icon(
+                        Icons.favorite,
+                        color: Colors.red.shade300,
+                        size: 16,
+                      ),
                     ),
                   ),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                ],
+              ),
+            ),
+            
+            // Post info
+            Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
                         childName,
                         style: GoogleFonts.poppins(
+                          fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          fontSize: 16,
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        timePosted,
+                        timePosted.contains("Just now") ? "New!" : "",
                         style: GoogleFonts.poppins(
-                          color: Colors.grey,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.shade100,
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.star,
-                    color: Colors.amber,
-                    size: 20,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          
-          // Caption
-          if (content.isNotEmpty)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Text(
-                content,
-                style: GoogleFonts.poppins(
-                  fontSize: 16,
-                ),
-              ),
-            ),
-            
-          SizedBox(height: 12),
-          
-          // Image
-          ClipRRect(
-            borderRadius: BorderRadius.only(
-              bottomLeft: Radius.circular(20),
-              bottomRight: Radius.circular(20),
-            ),
-            child: isAsset 
-              ? Image.asset(
-                  imagePath,
-                  width: double.infinity,
-                  height: 240,
-                  fit: BoxFit.cover,
-                )
-              : Image.file(
-                  File(imagePath),
-                  width: double.infinity,
-                  height: 240,
-                  fit: BoxFit.cover,
-                ),
-          ),
-          
-          // Actions
-          Container(
-            padding: EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(20),
-                bottomRight: Radius.circular(20),
-              ),
-            ),
-            child: Row(
-              children: [
-                GestureDetector(
-                  onTap: () => _toggleLike(index),
-                  child: Row(
-                    children: [
-                      Icon(
-                        isLiked ? Icons.favorite : Icons.favorite_border,
-                        color: isLiked ? Colors.red : Colors.red.shade300,
-                        size: 22,
-                      ),
-                      SizedBox(width: 4),
-                      Text(
-                        likes.toString(),
-                        style: GoogleFonts.poppins(
-                          fontSize: 14,
+                          fontSize: 12,
+                          color: Colors.green,
                           fontWeight: FontWeight.w500,
-                          color: isLiked ? Colors.red : Colors.black,
                         ),
                       ),
                     ],
                   ),
-                ),
-                SizedBox(width: 24),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.chat_bubble_outline,
-                      color: Colors.blue,
-                      size: 22,
-                    ),
-                    SizedBox(width: 4),
-                    Text(
-                      comments.toString(),
-                      style: GoogleFonts.poppins(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-                Spacer(),
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade100,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    'Great work!',
+                  SizedBox(height: 2),
+                  Text(
+                    content,
                     style: GoogleFonts.poppins(
                       fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.blue.shade700,
+                      color: Colors.grey.shade700,
                     ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                ),
-              ],
+                  SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      GestureDetector(
+                        onTap: () => _toggleLike(index),
+                        child: Row(
+                          children: [
+                            Icon(
+                              likedByMe ? Icons.favorite : Icons.favorite_border,
+                              color: likedByMe ? Colors.red : Colors.grey.shade600,
+                              size: 16,
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              likes.toString(),
+                              style: GoogleFonts.poppins(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.chat_bubble_outline,
+                            color: Colors.grey.shade600,
+                            size: 16,
+                          ),
+                          SizedBox(width: 4),
+                          Text(
+                            comments.toString(),
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

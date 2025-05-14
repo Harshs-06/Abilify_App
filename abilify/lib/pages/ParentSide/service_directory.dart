@@ -5,6 +5,9 @@ import 'package:abilify/pages/ParentSide/therapist_directory.dart';
 import 'package:abilify/pages/ParentSide/medical_directory.dart';
 import 'package:abilify/pages/ParentSide/schools_directory.dart';
 import 'package:abilify/pages/ParentSide/care_directory.dart';
+import 'package:abilify/pages/ParentSide/parent_home_page.dart';
+import 'package:abilify/pages/ParentSide/community_forum.dart';
+import 'package:abilify/pages/ParentSide/chats.dart';
 
 class ServiceDirectory extends StatefulWidget {
   const ServiceDirectory({Key? key}) : super(key: key);
@@ -22,6 +25,9 @@ class _ServiceDirectoryState extends State<ServiceDirectory> {
       switch (index) {
         case 0:
           Navigator.pushReplacementNamed(context, '/parent_home');
+          break;
+        case 1:
+          // Already on services page
           break;
         case 2:
           Navigator.pushReplacementNamed(context, '/community_forum');

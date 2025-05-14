@@ -4,6 +4,9 @@ import 'package:abilify/widgets/bottom_navigation.dart';
 import 'package:abilify/models/chat_model.dart';
 import 'package:abilify/pages/ParentSide/parent_chat_detail.dart';
 import 'package:abilify/pages/ParentSide/parent_add_contact.dart';
+import 'package:abilify/pages/ParentSide/parent_home_page.dart';
+import 'package:abilify/pages/ParentSide/service_directory.dart';
+import 'package:abilify/pages/ParentSide/community_forum.dart';
 import 'package:intl/intl.dart';
 
 class Chats extends StatefulWidget {
@@ -29,6 +32,9 @@ class _ChatsState extends State<Chats> {
           break;
         case 2:
           Navigator.pushReplacementNamed(context, '/community_forum');
+          break;
+        case 3:
+          // Already on chats page
           break;
       }
     }
