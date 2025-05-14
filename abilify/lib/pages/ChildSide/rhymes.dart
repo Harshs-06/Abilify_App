@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class Rhymes extends StatefulWidget {
   const Rhymes({super.key});
@@ -10,6 +11,9 @@ class Rhymes extends StatefulWidget {
 }
 
 class _RhymesState extends State<Rhymes> {
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  bool _isPlaying = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -152,6 +156,24 @@ class _RhymesState extends State<Rhymes> {
                       title: 'The Wheels on the Bus',
                       description: 'A fun, action-packed rhyme about a bus journey.',
                       color: const Color(0xFFFF8A47),
+                      onTap: () async {
+                        if (_isPlaying) {
+                          await _audioPlayer.stop();
+                          setState(() {
+                            _isPlaying = false;
+                          });
+                        } else {
+                          await _audioPlayer.play(AssetSource('wheels_on_the_bus.mp3'));
+                          setState(() {
+                            _isPlaying = true;
+                          });
+                          _audioPlayer.onPlayerComplete.listen((event) {
+                            setState(() {
+                              _isPlaying = false;
+                            });
+                          });
+                        }
+                      },
                     ),
                     
                     const SizedBox(height: 8),
@@ -323,90 +345,95 @@ class RhymeCard extends StatelessWidget {
   final String title;
   final String description;
   final Color color;
+  final VoidCallback? onTap;
 
   const RhymeCard({
     super.key,
     required this.title,
     required this.description,
     required this.color,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      height: 55, // Reduced from 63 to make it smaller
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.centerLeft,
-          end: Alignment.centerRight,
-          colors: [
-            Colors.white,
-            Colors.white.withOpacity(0.9),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(14),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.2),
-            blurRadius: 6,
-            offset: Offset(0, 2),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: double.infinity,
+        height: 55, // Reduced from 63 to make it smaller
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [
+              Colors.white,
+              Colors.white.withOpacity(0.9),
+            ],
           ),
-        ],
-        border: Border(left: BorderSide(color: color, width: 6)), // Reduced border width
-      ),
-      child: Row(
-        children: [
-          SizedBox(width: 8),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  title,
-                  textAlign: TextAlign.left,
-                  style: GoogleFonts.poppins(
-                    color: Colors.black,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14, // Reduced from 16
-                  ),
-                ),
-                SizedBox(height: 2),
-                ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxWidth: MediaQuery.of(context).size.width * 0.7,
-                  ),
-                  child: Text(
-                    description,
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.2),
+              blurRadius: 6,
+              offset: Offset(0, 2),
+            ),
+          ],
+          border: Border(left: BorderSide(color: color, width: 6)), // Reduced border width
+        ),
+        child: Row(
+          children: [
+            SizedBox(width: 8),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    title,
                     textAlign: TextAlign.left,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
                     style: GoogleFonts.poppins(
-                      color: Colors.grey,
-                      fontWeight: FontWeight.w500,
-                      fontSize: 11, // Reduced from 12
+                      color: Colors.black,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14, // Reduced from 16
                     ),
                   ),
-                ),
-              ],
+                  SizedBox(height: 2),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.7,
+                    ),
+                    child: Text(
+                      description,
+                      textAlign: TextAlign.left,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: GoogleFonts.poppins(
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w500,
+                        fontSize: 11, // Reduced from 12
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-          Container(
-            padding: EdgeInsets.all(6), // Reduced from 8
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              shape: BoxShape.circle,
+            Container(
+              padding: EdgeInsets.all(6), // Reduced from 8
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.music_note_rounded,
+                color: color,
+                size: 20, // Reduced from 24
+              ),
             ),
-            child: Icon(
-              Icons.music_note_rounded,
-              color: color,
-              size: 20, // Reduced from 24
-            ),
-          ),
-          SizedBox(width: 10),
-        ],
+            SizedBox(width: 10),
+          ],
+        ),
       ),
     );
   }
