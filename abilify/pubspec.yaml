@@ -47,10 +47,14 @@ dependencies:
   geolocator: ^10.1.0
   url_launcher: ^6.1.14
   provider: ^6.1.2
+  firebase_core: ^2.24.0
+  firebase_auth: ^4.13.0
+  google_sign_in: ^6.1.0  
+
 
 flutter_native_splash:
   color: "#faf0e6"
-  image: assets/logo1.png
+  image: assets/abilify_logo.png
   android: true
   ios: true
 
@@ -64,6 +68,16 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
+
+# Flutter Launcher Icons configuration
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/abilify_logo.png"
+  adaptive_icon_background: "#faf0e6" # Light cream background matching the app's theme
+  adaptive_icon_foreground: "assets/abilify_logo.png"
+  min_sdk_android: 21 # Android 5.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
