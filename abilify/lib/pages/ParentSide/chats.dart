@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:abilify/widgets/bottom_navigation.dart';
 import 'package:abilify/models/chat_model.dart';
 import 'package:abilify/pages/ParentSide/parent_chat_detail.dart';
+import 'package:abilify/pages/ParentSide/parent_add_contact.dart';
 import 'package:intl/intl.dart';
 
 class Chats extends StatefulWidget {
@@ -52,7 +53,12 @@ class _ChatsState extends State<Chats> {
         actions: [
           IconButton(
             icon: Icon(Icons.search, color: Colors.black),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ParentAddContact()),
+              );
+            },
           ),
         ],
       ),
@@ -133,7 +139,12 @@ class _ChatsState extends State<Chats> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ParentAddContact()),
+          );
+        },
         backgroundColor: Color(0xFF9471E1),
         child: Icon(Icons.chat, color: Colors.white),
       ),
@@ -179,7 +190,12 @@ class _ChatsState extends State<Chats> {
             ),
             SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ParentAddContact()),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xFF9471E1),
                 padding: EdgeInsets.symmetric(
