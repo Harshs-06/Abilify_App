@@ -11,13 +11,13 @@ class MapView extends StatefulWidget {
   final Function(GoogleMapController)? onMapCreated;
 
   const MapView({
-    Key? key,
+    super.key,
     required this.markers,
     required this.markerColor,
     this.height = 300,
     this.showCurrentLocation = true,
     this.onMapCreated,
-  }) : super(key: key);
+  });
 
   @override
   _MapViewState createState() => _MapViewState();

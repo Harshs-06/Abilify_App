@@ -5,7 +5,7 @@ import 'package:abilify/services/rewards_provider.dart';
 import 'package:abilify/services/cart_provider.dart';
 
 class RewardsCart extends StatefulWidget {
-  const RewardsCart({Key? key}) : super(key: key);
+  const RewardsCart({super.key});
 
   @override
   _RewardsCartState createState() => _RewardsCartState();
@@ -333,13 +333,13 @@ class CartItemCard extends StatelessWidget {
   final VoidCallback onRemove;
 
   const CartItemCard({
-    Key? key,
+    super.key,
     required this.item,
     required this.isSelected,
     required this.canAfford,
     required this.onToggleSelection,
     required this.onRemove,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

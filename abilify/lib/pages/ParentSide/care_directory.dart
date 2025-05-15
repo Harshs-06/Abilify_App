@@ -5,7 +5,7 @@ import 'package:abilify/utils/map_utils.dart';
 import 'package:abilify/utils/email_utils.dart';
 
 class CareDirectory extends StatefulWidget {
-  const CareDirectory({Key? key}) : super(key: key);
+  const CareDirectory({super.key});
 
   @override
   _CareDirectoryState createState() => _CareDirectoryState();
@@ -168,7 +168,7 @@ class _CareDirectoryState extends State<CareDirectory> {
             SizedBox(height: 16),
             
             // Replace Care services grid with Map
-            Container(
+            SizedBox(
               height: 200,
               child: MapView(
                 markers: MapUtils.getCaregiverMarkers(),
@@ -393,13 +393,13 @@ class _CareDirectoryState extends State<CareDirectory> {
                           providerName: name,
                         );
                       },
-                      child: Text('Contact'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFFAA7EFF),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
+                      child: Text('Contact'),
                     ),
                   ],
                 ),
@@ -480,7 +480,6 @@ class _CareDirectoryState extends State<CareDirectory> {
                           recipient: 'info@$name.com'.toLowerCase().replaceAll(' ', ''),
                         );
                       },
-                      child: Text('View'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Color(0xFFAA7EFF),
                         side: BorderSide(color: Color(0xFFAA7EFF)),
@@ -488,6 +487,7 @@ class _CareDirectoryState extends State<CareDirectory> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
+                      child: Text('View'),
                     ),
                     SizedBox(width: 8),
                     ElevatedButton(
@@ -497,13 +497,13 @@ class _CareDirectoryState extends State<CareDirectory> {
                           providerName: name,
                         );
                       },
-                      child: Text('Contact'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFFAA7EFF),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
+                      child: Text('Contact'),
                     ),
                   ],
                 ),

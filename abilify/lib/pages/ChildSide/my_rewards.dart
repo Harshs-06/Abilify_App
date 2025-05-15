@@ -4,7 +4,7 @@ import 'package:abilify/models/reward_item.dart';
 import 'package:abilify/services/rewards_provider.dart';
 
 class MyRewards extends StatefulWidget {
-  const MyRewards({Key? key}) : super(key: key);
+  const MyRewards({super.key});
 
   @override
   _MyRewardsState createState() => _MyRewardsState();
@@ -193,9 +193,9 @@ class PurchasedRewardCard extends StatelessWidget {
   final RewardItem item;
 
   const PurchasedRewardCard({
-    Key? key,
+    super.key,
     required this.item,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

@@ -8,6 +8,7 @@ import 'package:abilify/pages/ChildSide/edit_profile.dart';
 import 'package:abilify/pages/ChildSide/notification_preferences.dart';
 import 'package:abilify/pages/ChildSide/parent_controls.dart';
 import 'package:abilify/services/user_data_provider.dart';
+import 'package:abilify/services/auth_service.dart';
 
 class ChildProfile extends StatefulWidget {
   const ChildProfile({super.key});
@@ -22,15 +23,39 @@ class _ChildProfileState extends State<ChildProfile> {
   late String profileImage;
   late bool isAssetImage;
   final UserDataProvider _userDataProvider = UserDataProvider();
+  final AuthService _authService = AuthService();
   
   @override
   void initState() {
     super.initState();
-    // Get user data from provider
-    childName = _userDataProvider.childName;
+    loadUserData();
+  }
+  
+  void loadUserData() {
+    // Get name from auth service, fallback to user data provider
+    childName = _authService.currentUser?.displayName ?? _userDataProvider.childName;
     childAge = _userDataProvider.childAge;
     profileImage = _userDataProvider.profileImage;
     isAssetImage = _userDataProvider.isAssetImage;
+  }
+  
+  Future<void> _navigateToEditProfile() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditProfile(
+          initialName: childName,
+          initialAge: childAge,
+          profileImage: profileImage,
+        ),
+      ),
+    );
+    
+    if (result != null) {
+      setState(() {
+        loadUserData(); // Reload all data from services
+      });
+    }
   }
   
   @override
@@ -293,46 +318,7 @@ class _ChildProfileState extends State<ChildProfile> {
                     SettingItem(
                       title: 'Edit Profile',
                       iconData: Icons.edit,
-                      onTap: () async {
-                        final result = await Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EditProfile(
-                              initialName: childName,
-                              initialAge: childAge,
-                              profileImage: isAssetImage ? profileImage : profileImage,
-                            ),
-                          ),
-                        );
-                        
-                        // Handle the result from EditProfile
-                        if (result != null && result is Map<String, dynamic>) {
-                          final newName = result['name'];
-                          final newAge = result['age'];
-                          final newProfileImage = result['profileImage'];
-                          final newIsAssetImage = result['isAssetImage'];
-                          
-                          // Update user data provider
-                          await _userDataProvider.updateProfile(
-                            name: newName,
-                            age: newAge,
-                            image: newProfileImage,
-                            isAsset: newIsAssetImage,
-                          );
-                          
-                          // Update state
-                          setState(() {
-                            childName = newName;
-                            childAge = newAge;
-                            profileImage = newProfileImage;
-                            isAssetImage = newIsAssetImage;
-                          });
-                          
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Profile updated successfully')),
-                          );
-                        }
-                      },
+                      onTap: _navigateToEditProfile,
                     ),
                     
                     SettingItem(
@@ -390,7 +376,7 @@ class StatCard extends StatelessWidget {
   final IconData iconData;
   final Color color;
 
-  const StatCard({
+  const StatCard({super.key, 
     required this.title,
     required this.value,
     required this.iconData,
@@ -456,7 +442,7 @@ class AchievementCard extends StatelessWidget {
   final bool isCompleted;
   final double progress;
 
-  const AchievementCard({
+  const AchievementCard({super.key, 
     required this.title,
     required this.description,
     required this.isCompleted,
@@ -563,7 +549,7 @@ class SettingItem extends StatelessWidget {
   final Color? iconColor;
   final Color? textColor;
 
-  const SettingItem({
+  const SettingItem({super.key, 
     required this.title,
     required this.iconData,
     required this.onTap,

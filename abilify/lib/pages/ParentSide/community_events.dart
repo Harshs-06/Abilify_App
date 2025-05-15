@@ -17,11 +17,11 @@ class CommunityEvents extends StatefulWidget {
 }
 
 class _CommunityEventsState extends State<CommunityEvents> {
-  int _currentIndex = 2; // Set to Community tab
+  final int _currentIndex = 2; // Set to Community tab
   bool _showCalendarView = false;
   DateTime _focusedDay = DateTime.now();
   DateTime _selectedDay = DateTime.now();
-  CalendarFormat _calendarFormat = CalendarFormat.month;
+  final CalendarFormat _calendarFormat = CalendarFormat.month;
   final Random _random = Random();
 
   // List of possible random events to generate
@@ -1033,7 +1033,7 @@ class _CommunityEventsState extends State<CommunityEvents> {
                 ),
               ],
             ),
-          )).toList(),
+          )),
           
           if (_getEventDataForDay(_selectedDay).isEmpty)
             Container(

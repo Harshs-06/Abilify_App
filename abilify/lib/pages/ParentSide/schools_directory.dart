@@ -5,7 +5,7 @@ import 'package:abilify/utils/map_utils.dart';
 import 'package:abilify/utils/email_utils.dart';
 
 class SchoolsDirectory extends StatefulWidget {
-  const SchoolsDirectory({Key? key}) : super(key: key);
+  const SchoolsDirectory({super.key});
 
   @override
   _SchoolsDirectoryState createState() => _SchoolsDirectoryState();
@@ -168,7 +168,7 @@ class _SchoolsDirectoryState extends State<SchoolsDirectory> {
             SizedBox(height: 16),
             
             // Replace School types grid with Map
-            Container(
+            SizedBox(
               height: 200,
               child: MapView(
                 markers: MapUtils.getSchoolMarkers(),
@@ -390,13 +390,13 @@ class _SchoolsDirectoryState extends State<SchoolsDirectory> {
                           providerName: name,
                         );
                       },
-                      child: Text('Info'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFFFFD166),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
+                      child: Text('Info'),
                     ),
                   ],
                 ),

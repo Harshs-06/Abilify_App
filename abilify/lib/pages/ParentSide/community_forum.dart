@@ -3,57 +3,29 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:abilify/widgets/bottom_navigation.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'package:abilify/pages/ParentSide/parent_home_page.dart';
+import 'package:abilify/pages/ParentSide/service_directory.dart';
+import 'package:abilify/pages/ParentSide/chats.dart';
+import 'package:abilify/services/local_data_service.dart';
+import 'package:provider/provider.dart';
 
 class CommunityForum extends StatefulWidget {
-  const CommunityForum({Key? key}) : super(key: key);
+  const CommunityForum({super.key});
 
   @override
   _CommunityForumState createState() => _CommunityForumState();
 }
 
 class _CommunityForumState extends State<CommunityForum> {
-  int _currentIndex = 2; // Set to 2 for Community tab
+  final int _currentIndex = 2; // Set to 2 for Community tab
   int _selectedCategoryIndex = 1; // Default to "General"
   final TextEditingController _postController = TextEditingController();
   final TextEditingController _commentController = TextEditingController();
   final ImagePicker _picker = ImagePicker();
+  bool _isLoading = false;
   
-  // Posts data with mutable likes and comments
-  List<Map<String, dynamic>> _posts = [
-    {
-      'userName': 'Thomas Magnum',
-      'userHandle': '@allOnBoard',
-      'timePosted': '26Jun, 10:14PM',
-      'content': 'You deserve a love with no trauma attached to it. A love '
-          'that is goof for your mental health, a love that is kind to '
-          'you. I\'am talking about people NOT suffering from mental '
-          'health issues.',
-      'imagePath': 'assets/story_time.png',
-      'isAsset': true,
-      'likes': 55600,
-      'likedByMe': false,
-      'comments': [
-        {'text': 'This is so meaningful, thank you!', 'author': 'Jane D.'},
-        {'text': 'Needed to hear this today ❤️', 'author': 'Michael S.'},
-      ],
-    },
-    {
-      'userName': 'Sarah Johnson',
-      'userHandle': '@sarahJ',
-      'timePosted': '25Jun, 3:45PM',
-      'content': 'Just had a breakthrough with my son today during therapy. '
-          'The techniques we\'ve been using are finally showing results! '
-          'So grateful for this community and all the support.',
-      'imagePath': null,
-      'isAsset': true,
-      'likes': 124,
-      'likedByMe': false,
-      'comments': [
-        {'text': 'That\'s amazing news!', 'author': 'Mark H.'},
-        {'text': 'So happy for you both!', 'author': 'Lisa P.'},
-      ],
-    },
-  ];
+  // Posts will be loaded from LocalDataService
+  List<Map<String, dynamic>> _posts = [];
 
   final List<Map<String, dynamic>> _categories = [
     {
@@ -89,6 +61,37 @@ class _CommunityForumState extends State<CommunityForum> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    _loadPosts();
+  }
+
+  void _loadPosts() async {
+    setState(() {
+      _isLoading = true;
+    });
+    
+    // Get the LocalDataService instance
+    final LocalDataService dataService = Provider.of<LocalDataService>(context, listen: false);
+    
+    try {
+      // Load community posts
+      await dataService.init();
+      setState(() {
+        _posts = dataService.communityPosts;
+        _isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error loading posts: $e')),
+      );
+    }
+  }
+
+  @override
   void dispose() {
     _postController.dispose();
     _commentController.dispose();
@@ -96,9 +99,7 @@ class _CommunityForumState extends State<CommunityForum> {
   }
 
   void _showAddPostDialog() {
-    String? selectedImagePath;
     File? selectedImageFile;
-    bool isAsset = true;
     
     showDialog(
       context: context,
@@ -146,8 +147,6 @@ class _CommunityForumState extends State<CommunityForum> {
                               if (image != null) {
                                 setState(() {
                                   selectedImageFile = File(image.path);
-                                  selectedImagePath = image.path;
-                                  isAsset = false;
                                 });
                               }
                             } catch (e) {
@@ -199,9 +198,7 @@ class _CommunityForumState extends State<CommunityForum> {
                 ElevatedButton(
                   onPressed: () {
                     if (_postController.text.isNotEmpty) {
-                      setState(() {
-                        _addNewPost(_postController.text, selectedImagePath, isAsset);
-                      });
+                      _addNewPost(_postController.text, selectedImageFile);
                       Navigator.of(context).pop();
                       _postController.clear();
                     }
@@ -222,31 +219,54 @@ class _CommunityForumState extends State<CommunityForum> {
     );
   }
   
-  void _addNewPost(String content, String? imagePath, bool isAsset) {
+  void _addNewPost(String content, File? imageFile) async {
     setState(() {
-      _posts.insert(0, {
-        'userName': 'Me',
-        'userHandle': '@parent',
-        'timePosted': 'Just now',
-        'content': content,
-        'imagePath': imagePath,
-        'isAsset': isAsset,
-        'likes': 0,
-        'likedByMe': false,
-        'comments': [],
-      });
+      _isLoading = true;
     });
+    
+    // Get the LocalDataService instance
+    final LocalDataService dataService = Provider.of<LocalDataService>(context, listen: false);
+    
+    try {
+      // Add the post to local storage
+      await dataService.addCommunityPost(content, imageFile);
+      
+      // Refresh the posts list
+      setState(() {
+        _posts = dataService.communityPosts;
+        _isLoading = false;
+      });
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Post added successfully!')),
+      );
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error adding post: $e')),
+      );
+    }
   }
   
-  void _toggleLike(int index) {
-    setState(() {
-      if (_posts[index]['likedByMe']) {
-        _posts[index]['likes'] = _posts[index]['likes'] - 1;
-      } else {
-        _posts[index]['likes'] = _posts[index]['likes'] + 1;
-      }
-      _posts[index]['likedByMe'] = !_posts[index]['likedByMe'];
-    });
+  void _toggleLike(int index) async {
+    // Get the LocalDataService instance
+    final LocalDataService dataService = Provider.of<LocalDataService>(context, listen: false);
+    
+    try {
+      // Toggle like in local storage
+      await dataService.toggleCommunityPostLike(_posts[index]['id']);
+      
+      // Refresh the posts list
+      setState(() {
+        _posts = dataService.communityPosts;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error toggling like: $e')),
+      );
+    }
   }
   
   void _showAddCommentDialog(int postIndex) {
@@ -285,12 +305,7 @@ class _CommunityForumState extends State<CommunityForum> {
             ElevatedButton(
               onPressed: () {
                 if (_commentController.text.isNotEmpty) {
-                  setState(() {
-                    _posts[postIndex]['comments'].add({
-                      'text': _commentController.text,
-                      'author': 'Me',
-                    });
-                  });
+                  _addComment(postIndex, _commentController.text);
                   Navigator.of(context).pop();
                   _commentController.clear();
                 }
@@ -308,6 +323,25 @@ class _CommunityForumState extends State<CommunityForum> {
       },
     );
   }
+  
+  void _addComment(int postIndex, String comment) async {
+    // Get the LocalDataService instance
+    final LocalDataService dataService = Provider.of<LocalDataService>(context, listen: false);
+    
+    try {
+      // Add comment to the post in local storage
+      await dataService.addCommentToCommunityPost(_posts[postIndex]['id'], comment);
+      
+      // Refresh the posts list
+      setState(() {
+        _posts = dataService.communityPosts;
+      });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error adding comment: $e')),
+      );
+    }
+  }
 
   void _onTabTapped(int index) {
     if (index != _currentIndex) {
@@ -318,6 +352,9 @@ class _CommunityForumState extends State<CommunityForum> {
           break;
         case 1:
           Navigator.pushReplacementNamed(context, '/service_directory');
+          break;
+        case 2:
+          // Already on community forum page
           break;
         case 3:
           Navigator.pushReplacementNamed(context, '/chats');
@@ -331,188 +368,228 @@ class _CommunityForumState extends State<CommunityForum> {
     return Scaffold(
       backgroundColor: Color(0xFFFFF8E9), // Light cream background
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Padding(
-                  padding: const EdgeInsets.only(top: 20.0, bottom: 12.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Community',
-                        style: GoogleFonts.poppins(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black,
-                        ),
-                      ),
-                      Text(
-                        'How are you feeling today?',
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          color: Colors.black54,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                
-                // Search bar
-                Container(
-                  margin: EdgeInsets.symmetric(vertical: 16),
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
-                    border: Border.all(color: Colors.grey.shade300),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.search,
-                        color: Colors.deepPurple,
-                        size: 24,
-                      ),
-                      SizedBox(width: 10),
-                      Expanded(
-                        child: TextField(
-                          decoration: InputDecoration(
-                            hintText: 'Search for Session, journals.....',
-                            hintStyle: GoogleFonts.poppins(
-                              color: Colors.grey.shade600,
-                              fontSize: 16,
-                            ),
-                            border: InputBorder.none,
+        child: _isLoading
+          ? Center(
+              child: CircularProgressIndicator(
+                color: Color(0xFF9471E1),
+              ),
+            )
+          : SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Padding(
+                    padding: const EdgeInsets.only(top: 20.0, bottom: 12.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Community',
+                          style: GoogleFonts.poppins(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                
-                // Categories
-                Container(
-                  height: 100,
-                  margin: EdgeInsets.symmetric(vertical: 16),
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _categories.length,
-                    itemExtent: 90,
-                    itemBuilder: (context, index) {
-                      return GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            _selectedCategoryIndex = index;
-                          });
-                          
-                          // Handle Add button tap
-                          if (index == 0) {
-                            _showAddPostDialog();
-                          }
-                        },
-                        child: Column(
-                          children: [
-                            Container(
-                              width: 70,
-                              height: 70,
-                              decoration: BoxDecoration(
-                                color: _categories[index]['color'],
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                _categories[index]['icon'],
-                                size: 30,
-                                color: _categories[index]['iconColor'],
-                              ),
-                            ),
-                            SizedBox(height: 8),
-                            Text(
-                              _categories[index]['label'],
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
+                        Text(
+                          'How are you feeling today?',
+                          style: GoogleFonts.poppins(
+                            fontSize: 18,
+                            color: Colors.black54,
+                          ),
                         ),
-                      );
-                    },
+                      ],
+                    ),
                   ),
-                ),
-                
-                // Create post
-                GestureDetector(
-                  onTap: _showAddPostDialog,
-                  child: Container(
-                    margin: EdgeInsets.only(bottom: 20),
-                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  
+                  // Search bar
+                  Container(
+                    margin: EdgeInsets.symmetric(vertical: 16),
+                    padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Color(0xFFFFF1D7),
-                      borderRadius: BorderRadius.circular(16),
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(color: Colors.grey.shade300),
                     ),
                     child: Row(
                       children: [
-                        CircleAvatar(
-                          radius: 25,
-                          backgroundColor: Color(0xFFEDCCBB),
+                        Icon(
+                          Icons.search,
+                          color: Colors.deepPurple,
+                          size: 24,
                         ),
-                        SizedBox(width: 16),
+                        SizedBox(width: 10),
                         Expanded(
-                          child: Text(
-                            'Write something.....',
-                            style: GoogleFonts.poppins(
-                              fontSize: 16,
-                              color: Colors.grey.shade500,
+                          child: TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Search for Session, journals.....',
+                              hintStyle: GoogleFonts.poppins(
+                                color: Colors.grey.shade600,
+                                fontSize: 16,
+                              ),
+                              border: InputBorder.none,
                             ),
                           ),
                         ),
                       ],
                     ),
                   ),
-                ),
-                
-                // Posts
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: NeverScrollableScrollPhysics(),
-                  itemCount: _posts.length,
-                  itemBuilder: (context, index) {
-                    final post = _posts[index];
-                    final likeCount = post['likes'];
-                    final String likesText = likeCount >= 1000 
-                        ? '${(likeCount / 1000).toStringAsFixed(1)}K'
-                        : likeCount.toString();
-                    
-                    return Column(
-                      children: [
-                        _buildPostCard(
-                          index: index,
-                          userName: post['userName'],
-                          userHandle: post['userHandle'],
-                          timePosted: post['timePosted'],
-                          content: post['content'],
-                          imagePath: post['imagePath'],
-                          likes: likesText,
-                          comments: post['comments'].length.toString(),
-                          shares: '105',
-                          isLiked: post['likedByMe'],
-                        ),
-                        SizedBox(height: 16),
-                      ],
-                    );
-                  },
-                ),
-                
-                SizedBox(height: 80), // Bottom space for navigation bar
-              ],
+                  
+                  // Categories
+                  Container(
+                    height: 100,
+                    margin: EdgeInsets.symmetric(vertical: 16),
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: _categories.length,
+                      itemExtent: 90,
+                      itemBuilder: (context, index) {
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              _selectedCategoryIndex = index;
+                            });
+                            
+                            // Handle Add button tap
+                            if (index == 0) {
+                              _showAddPostDialog();
+                            }
+                          },
+                          child: Column(
+                            children: [
+                              Container(
+                                width: 70,
+                                height: 70,
+                                decoration: BoxDecoration(
+                                  color: _categories[index]['color'],
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(
+                                  _categories[index]['icon'],
+                                  size: 30,
+                                  color: _categories[index]['iconColor'],
+                                ),
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                _categories[index]['label'],
+                                style: GoogleFonts.poppins(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  
+                  // Create post
+                  GestureDetector(
+                    onTap: _showAddPostDialog,
+                    child: Container(
+                      margin: EdgeInsets.only(bottom: 20),
+                      padding: EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                      decoration: BoxDecoration(
+                        color: Color(0xFFFFF1D7),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 25,
+                            backgroundColor: Color(0xFFEDCCBB),
+                          ),
+                          SizedBox(width: 16),
+                          Expanded(
+                            child: Text(
+                              'Write something.....',
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                color: Colors.grey.shade500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  // Posts
+                  _posts.isEmpty
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 50.0),
+                            child: Column(
+                              children: [
+                                Icon(
+                                  Icons.post_add,
+                                  size: 60,
+                                  color: Colors.grey,
+                                ),
+                                SizedBox(height: 16),
+                                Text(
+                                  'No posts yet',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  'Be the first to share something with the community',
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        )
+                      : ListView.builder(
+                        shrinkWrap: true,
+                        physics: NeverScrollableScrollPhysics(),
+                        itemCount: _posts.length,
+                        itemBuilder: (context, index) {
+                          final post = _posts[index];
+                          final likeCount = post['likes'];
+                          final String likesText = likeCount >= 1000 
+                              ? '${(likeCount / 1000).toStringAsFixed(1)}K'
+                              : likeCount.toString();
+                          
+                          return Column(
+                            children: [
+                              _buildPostCard(
+                                index: index,
+                                userName: post['userName'],
+                                userHandle: post['userHandle'],
+                                timePosted: post['timePosted'],
+                                content: post['content'],
+                                imagePath: post['imagePath'],
+                                isAsset: post['isAsset'] ?? false,
+                                likes: likesText,
+                                comments: post['comments'].length.toString(),
+                                shares: '0',
+                                isLiked: post['likedByMe'],
+                              ),
+                              SizedBox(height: 16),
+                            ],
+                          );
+                        },
+                      ),
+                  
+                  SizedBox(height: 80), // Bottom space for navigation bar
+                ],
+              ),
             ),
           ),
-        ),
       ),
       bottomNavigationBar: AbilifyBottomNavBar(
         currentIndex: _currentIndex,
@@ -528,6 +605,7 @@ class _CommunityForumState extends State<CommunityForum> {
     required String timePosted,
     required String content,
     String? imagePath,
+    required bool isAsset,
     required String likes,
     required String comments,
     required String shares,
@@ -610,7 +688,7 @@ class _CommunityForumState extends State<CommunityForum> {
               width: double.infinity,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(16),
-                child: _posts[index]['isAsset'] == true
+                child: isAsset
                   ? Image.asset(
                       imagePath,
                       fit: BoxFit.cover,
@@ -679,10 +757,10 @@ class _CommunityForumState extends State<CommunityForum> {
           ),
           
           // Show comments if there are any
-          if (_posts[index]['comments'].length > 0) ...[
+          if (_posts[index]['comments'] != null && _posts[index]['comments'].length > 0) ...[
             SizedBox(height: 16),
             Divider(),
-            ..._posts[index]['comments'].map((comment) {
+            ...(_posts[index]['comments'] as List).map((comment) {
               return Padding(
                 padding: const EdgeInsets.only(top: 12.0),
                 child: Row(
@@ -723,7 +801,7 @@ class _CommunityForumState extends State<CommunityForum> {
                   ],
                 ),
               );
-            }).toList(),
+            }),
           ],
         ],
       ),

@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:abilify/pages/ChildSide/story_time.dart';
 import 'package:abilify/pages/ChildSide/music_play.dart';
+import 'package:abilify/pages/ChildSide/fun_games.dart';
 
 class Activity extends StatefulWidget {
   const Activity({super.key});
@@ -157,7 +158,10 @@ class _ActivityState extends State<Activity> {
                       icon: Icons.gamepad,
                       imagePath: "assets/fun_games.png",
                       onTap: () {
-                        // This will be implemented with actual navigation when Fun Games page is available
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => FunGames()),
+                        );
                       },
                     ),
                     
@@ -216,7 +220,7 @@ class ActivityOptionCard extends StatelessWidget {
   final bool useLottie;
   final VoidCallback onTap;
 
-  const ActivityOptionCard({
+  const ActivityOptionCard({super.key, 
     required this.title,
     required this.description,
     required this.color,

@@ -5,7 +5,7 @@ import 'package:abilify/utils/map_utils.dart';
 import 'package:abilify/utils/email_utils.dart';
 
 class MedicalDirectory extends StatefulWidget {
-  const MedicalDirectory({Key? key}) : super(key: key);
+  const MedicalDirectory({super.key});
 
   @override
   _MedicalDirectoryState createState() => _MedicalDirectoryState();
@@ -168,7 +168,7 @@ class _MedicalDirectoryState extends State<MedicalDirectory> {
             SizedBox(height: 16),
             
             // Replace Categories grid with Map
-            Container(
+            SizedBox(
               height: 200,
               child: MapView(
                 markers: MapUtils.getMedicalMarkers(),
@@ -372,7 +372,6 @@ class _MedicalDirectoryState extends State<MedicalDirectory> {
                           providerName: name,
                         );
                       },
-                      child: Text('Map'),
                       style: OutlinedButton.styleFrom(
                         foregroundColor: Color(0xFF8AE066),
                         side: BorderSide(color: Color(0xFF8AE066)),
@@ -380,6 +379,7 @@ class _MedicalDirectoryState extends State<MedicalDirectory> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
+                      child: Text('Map'),
                     ),
                   ],
                 ),
@@ -466,13 +466,13 @@ class _MedicalDirectoryState extends State<MedicalDirectory> {
                           providerName: name,
                         );
                       },
-                      child: Text('Book'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFF8AE066),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
+                      child: Text('Book'),
                     ),
                   ],
                 ),

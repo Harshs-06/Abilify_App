@@ -3,17 +3,21 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:abilify/widgets/bottom_navigation.dart';
 import 'package:abilify/models/chat_model.dart';
 import 'package:abilify/pages/ParentSide/parent_chat_detail.dart';
+import 'package:abilify/pages/ParentSide/parent_add_contact.dart';
+import 'package:abilify/pages/ParentSide/parent_home_page.dart';
+import 'package:abilify/pages/ParentSide/service_directory.dart';
+import 'package:abilify/pages/ParentSide/community_forum.dart';
 import 'package:intl/intl.dart';
 
 class Chats extends StatefulWidget {
-  const Chats({Key? key}) : super(key: key);
+  const Chats({super.key});
 
   @override
   _ChatsState createState() => _ChatsState();
 }
 
 class _ChatsState extends State<Chats> {
-  int _currentIndex = 3; // Set to 3 for Chats tab
+  final int _currentIndex = 3; // Set to 3 for Chats tab
   bool _showParents = true; // Toggle between Parents and Professionals
 
   void _onTabTapped(int index) {
@@ -28,6 +32,9 @@ class _ChatsState extends State<Chats> {
           break;
         case 2:
           Navigator.pushReplacementNamed(context, '/community_forum');
+          break;
+        case 3:
+          // Already on chats page
           break;
       }
     }
@@ -52,7 +59,12 @@ class _ChatsState extends State<Chats> {
         actions: [
           IconButton(
             icon: Icon(Icons.search, color: Colors.black),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ParentAddContact()),
+              );
+            },
           ),
         ],
       ),
@@ -133,7 +145,12 @@ class _ChatsState extends State<Chats> {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ParentAddContact()),
+          );
+        },
         backgroundColor: Color(0xFF9471E1),
         child: Icon(Icons.chat, color: Colors.white),
       ),
@@ -179,7 +196,12 @@ class _ChatsState extends State<Chats> {
             ),
             SizedBox(height: 16),
             ElevatedButton(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ParentAddContact()),
+                );
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Color(0xFF9471E1),
                 padding: EdgeInsets.symmetric(

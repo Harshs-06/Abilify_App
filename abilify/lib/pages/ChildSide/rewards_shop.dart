@@ -6,7 +6,7 @@ import 'package:abilify/services/cart_provider.dart';
 import 'package:abilify/pages/ChildSide/rewards_cart.dart';
 
 class RewardsShop extends StatefulWidget {
-  const RewardsShop({Key? key}) : super(key: key);
+  const RewardsShop({super.key});
 
   @override
   _RewardsShopState createState() => _RewardsShopState();
@@ -283,7 +283,7 @@ class _RewardsShopState extends State<RewardsShop> {
                       final isInCart = _cartProvider.isInCart(item.id);
                       
                       return RewardCard(
-                        key: ValueKey("${item.id}_${isPurchased}_${isInCart}"),
+                        key: ValueKey("${item.id}_${isPurchased}_$isInCart"),
                         item: item,
                         isPurchased: isPurchased,
                         isInCart: isInCart,
@@ -305,12 +305,12 @@ class RewardCard extends StatelessWidget {
   final VoidCallback onAddToCart;
 
   const RewardCard({
-    Key? key,
+    super.key,
     required this.item,
     required this.isPurchased,
     required this.isInCart,
     required this.onAddToCart,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -421,7 +421,7 @@ class RewardCard extends StatelessWidget {
                       isPurchased
                           ? Icon(Icons.check_circle, color: Colors.green)
                           : isInCart 
-                              ? Container(
+                              ? SizedBox(
                                   height: 32,
                                   child: ElevatedButton(
                                     onPressed: null,
@@ -442,7 +442,7 @@ class RewardCard extends StatelessWidget {
                                     ),
                                   ),
                                 )
-                              : Container(
+                              : SizedBox(
                                   height: 32,
                                   child: ElevatedButton(
                                     onPressed: onAddToCart,

@@ -7,9 +7,9 @@ class ParentChatDetail extends StatefulWidget {
   final ChatConversation conversation;
   
   const ParentChatDetail({
-    Key? key,
+    super.key,
     required this.conversation,
-  }) : super(key: key);
+  });
 
   @override
   _ParentChatDetailState createState() => _ParentChatDetailState();

@@ -5,7 +5,7 @@ import 'package:abilify/utils/map_utils.dart';
 import 'package:abilify/utils/email_utils.dart';
 
 class TherapistDirectory extends StatefulWidget {
-  const TherapistDirectory({Key? key}) : super(key: key);
+  const TherapistDirectory({super.key});
 
   @override
   _TherapistDirectoryState createState() => _TherapistDirectoryState();
@@ -168,7 +168,7 @@ class _TherapistDirectoryState extends State<TherapistDirectory> {
             SizedBox(height: 16),
             
             // Replace Specialties grid with Map
-            Container(
+            SizedBox(
               height: 200,
               child: MapView(
                 markers: MapUtils.getTherapistMarkers(),
@@ -348,13 +348,13 @@ class _TherapistDirectoryState extends State<TherapistDirectory> {
                           providerName: name,
                         );
                       },
-                      child: Text('Book'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Color(0xFF4DC3FF),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
+                      child: Text('Book'),
                     ),
                   ],
                 ),

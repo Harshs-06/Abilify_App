@@ -510,7 +510,7 @@ class ChallengeCard extends StatelessWidget {
   final Color color;
   final int points;
 
-  const ChallengeCard({
+  const ChallengeCard({super.key, 
     required this.title,
     required this.description,
     required this.isCompleted,
