@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:abilify/pages/ParentSide/privacy_policy.dart';
+import 'package:abilify/pages/ParentSide/terms_service.dart';
+import 'package:abilify/pages/ParentSide/change_password.dart';
+import 'package:abilify/pages/ParentSide/about_abilify.dart';
 
 class ParentSettings extends StatefulWidget {
   const ParentSettings({super.key});
@@ -199,11 +203,9 @@ class _ParentSettingsState extends State<ParentSettings> {
                 "Review our privacy terms",
                 Icons.privacy_tip_outlined,
                 () {
-                  // Show privacy policy
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Privacy policy will be available in a future update'),
-                    ),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => PrivacyPolicy()),
                   );
                 },
               ),
@@ -213,11 +215,9 @@ class _ParentSettingsState extends State<ParentSettings> {
                 "Review our terms of service",
                 Icons.description_outlined,
                 () {
-                  // Show terms of service
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Terms of service will be available in a future update'),
-                    ),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => TermsService()),
                   );
                 },
               ),
@@ -227,11 +227,9 @@ class _ParentSettingsState extends State<ParentSettings> {
                 "Update your account password",
                 Icons.lock_outline,
                 () {
-                  // Navigate to change password screen
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Password change will be available in a future update'),
-                    ),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ChangePassword()),
                   );
                 },
               ),
@@ -244,11 +242,9 @@ class _ParentSettingsState extends State<ParentSettings> {
                 "Learn more about our mission",
                 Icons.info_outline,
                 () {
-                  // Show about info
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('About page will be available in a future update'),
-                    ),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => AboutAbilify()),
                   );
                 },
               ),

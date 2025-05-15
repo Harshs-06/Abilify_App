@@ -170,6 +170,59 @@ class LocalAuthService extends ChangeNotifier {
     }
   }
   
+  /// Reset user password
+  Future<void> resetPassword(String email, String newPassword, {String? currentPassword}) async {
+    try {
+      // Validate email format
+      if (!_validateEmail(email)) {
+        throw 'Email must be a valid Gmail address (@gmail.com)';
+      }
+      
+      // Get all users
+      final users = await _db.getCollection('users');
+      
+      // Find user with matching email
+      String? userUid;
+      Map<String, dynamic>? userData;
+      
+      for (var entry in users.entries) {
+        final user = entry.value as Map<String, dynamic>;
+        if (user['email'] == email) {
+          userUid = entry.key;
+          userData = user;
+          break;
+        }
+      }
+      
+      if (userUid == null || userData == null) {
+        throw 'No account found with this email address';
+      }
+      
+      // If current password is provided, verify it
+      if (currentPassword != null) {
+        if (userData['password'] != currentPassword) {
+          throw 'Current password is incorrect';
+        }
+      }
+      
+      // Update the password
+      userData['password'] = newPassword;
+      
+      // Save updated user data
+      await _db.saveUser(userUid, userData);
+      
+      // If this is the current user, update their info in SharedPreferences
+      if (_currentUser != null && _currentUser!.email == email) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('currentUser', _currentUser!.toJson());
+      }
+      
+      notifyListeners();
+    } catch (e) {
+      throw e.toString();
+    }
+  }
+  
   /// Sign out the current user
   Future<void> signOut() async {
     try {
