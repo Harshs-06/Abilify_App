@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:abilify/customs/device_dimensions.dart';
 import 'package:abilify/services/auth_service.dart';
+import 'package:abilify/pages/ChildSide/child_home_page.dart';
 
 class ParentProfileEdit extends StatefulWidget {
   const ParentProfileEdit({super.key});
@@ -200,6 +201,67 @@ class _ParentProfileEditState extends State<ParentProfileEdit> {
                                   color: Colors.white,
                                 ),
                               ),
+                      ),
+                    ),
+                    
+                    SizedBox(height: 40),
+                    
+                    // Switch Account section
+                    _buildSectionTitle("Switch Account"),
+                    SizedBox(height: 10),
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(10),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 5,
+                            offset: Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        children: [
+                          CircleAvatar(
+                            radius: 25,
+                            backgroundImage: AssetImage("assets/child_pf.png"),
+                          ),
+                          SizedBox(width: 15),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Child Mode",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                Text(
+                                  "Switch to child's view",
+                                  style: GoogleFonts.poppins(
+                                    fontSize: 14,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          IconButton(
+                            icon: Icon(Icons.swap_horiz, color: Color(0xFFFE8668), size: 28),
+                            onPressed: () {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (context) => const ChildHomePage()),
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ),
                   ],

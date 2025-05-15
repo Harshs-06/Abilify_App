@@ -1,43 +1,38 @@
-import 'package:abilify/pages/sign_up.dart';
-import 'package:abilify/pages/forgot_password.dart';
-import 'package:abilify/pages/ChildSide/child_home_page.dart';
-import 'package:abilify/pages/ParentSide/parent_home_page.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:abilify/services/auth_service.dart'; 
+import 'package:abilify/services/auth_service.dart';
+import 'login.dart';
 
-class Login extends StatefulWidget {
+class ForgotPassword extends StatefulWidget {
   final String userType;
 
-  const Login({super.key, this.userType = 'parent'});
+  const ForgotPassword({super.key, this.userType = 'parent'});
 
   @override
-  _LoginState createState() => _LoginState();
+  _ForgotPasswordState createState() => _ForgotPasswordState();
 }
 
-class _LoginState extends State<Login> {
+class _ForgotPasswordState extends State<ForgotPassword> {
   final TextEditingController emailController = TextEditingController();
-  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController newPasswordController = TextEditingController();
   bool isButtonEnabled = false;
   bool obscureText = true;
   final AuthService _authService = AuthService();
   String? _errorMessage;
+  String? _successMessage;
   bool _isLoading = false;
 
   void _togglePasswordVisibility() {
-    if (passwordController.text.isNotEmpty) {
-      setState(() {
-        obscureText = !obscureText;
-      });
-    }
+    setState(() {
+      obscureText = !obscureText;
+    });
   }
 
   void _checkInput() {
     setState(() {
-      isButtonEnabled =
+      isButtonEnabled = 
           emailController.text.isNotEmpty && 
-          passwordController.text.isNotEmpty;
+          newPasswordController.text.isNotEmpty;
     });
   }
   
@@ -45,11 +40,12 @@ class _LoginState extends State<Login> {
     return email.toLowerCase().endsWith('@gmail.com');
   }
 
-  Future<void> _login() async {
+  Future<void> _resetPassword() async {
     // First check if email format is valid
     if (!_isValidEmail(emailController.text.trim())) {
       setState(() {
         _errorMessage = 'Email must end with @gmail.com';
+        _successMessage = null;
       });
       return;
     }
@@ -57,27 +53,22 @@ class _LoginState extends State<Login> {
     setState(() {
       _isLoading = true;
       _errorMessage = null;
+      _successMessage = null;
     });
 
     try {
       final email = emailController.text.trim();
-      final password = passwordController.text.trim();
+      final newPassword = newPasswordController.text.trim();
       
-      final user = await _authService.signInWithEmailAndPassword(email, password);
+      await _authService.resetPassword(email, newPassword);
       
-      if (user != null) {
-        if (widget.userType == 'parent') {
-          Navigator.pushReplacement(
-            context, 
-            MaterialPageRoute(builder: (context) => const ParentHomePage()),
-          );
-        } else {
-          Navigator.pushReplacement(
-            context, 
-            MaterialPageRoute(builder: (context) => const ChildHomePage()),
-          );
-        }
-      }
+      setState(() {
+        _successMessage = 'Password reset successfully! You can now login with your new password.';
+      });
+      
+      // Clear the input fields
+      emailController.clear();
+      newPasswordController.clear();
     } catch (e) {
       setState(() {
         _errorMessage = e.toString();
@@ -95,13 +86,13 @@ class _LoginState extends State<Login> {
   void initState() {
     super.initState();
     emailController.addListener(_checkInput);
-    passwordController.addListener(_checkInput);
+    newPasswordController.addListener(_checkInput);
   }
 
   @override
   void dispose() {
     emailController.dispose();
-    passwordController.dispose();
+    newPasswordController.dispose();
     super.dispose();
   }
 
@@ -110,70 +101,24 @@ class _LoginState extends State<Login> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: const Color.fromARGB(255, 251, 239, 215),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const SizedBox(height: 60),
-              Container(
-                width: 200,
-                height: 200,
-                decoration: const BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.white,
-                ),
-                child: Stack(
-                  children: [
-                    Center(
-                      child: Image.asset(
-                        'assets/login_logo.png',
-                        width: 120,
-                      ),
-                    ),
-                    Positioned(
-                      top: 30,
-                      right: 15,
-                      child: Container(
-                        width: 40,
-                        height: 40,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.amber,
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      top: 60,
-                      right: 35,
-                      child: Container(
-                        width: 15,
-                        height: 15,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.amber,
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 60,
-                      left: 25,
-                      child: Container(
-                        width: 15,
-                        height: 15,
-                        decoration: const BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.amber,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
               const SizedBox(height: 40),
               Text(
-                'Welcome to abilify!',
+                'Reset Password',
                 style: GoogleFonts.poppins(
                   fontSize: 32,
                   fontWeight: FontWeight.bold,
@@ -181,7 +126,16 @@ class _LoginState extends State<Login> {
                 ),
                 textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 60),
+              const SizedBox(height: 20),
+              Text(
+                'Enter your email and a new password to reset',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  color: Colors.black54,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 40),
               Container(
                 decoration: BoxDecoration(
                   color: Colors.white,
@@ -215,10 +169,10 @@ class _LoginState extends State<Login> {
                   borderRadius: BorderRadius.circular(30),
                 ),
                 child: TextField(
-                  controller: passwordController,
+                  controller: newPasswordController,
                   obscureText: obscureText,
                   decoration: InputDecoration(
-                    hintText: 'Password',
+                    hintText: 'New Password',
                     hintStyle: GoogleFonts.poppins(
                       color: Colors.grey,
                       fontSize: 16,
@@ -246,15 +200,25 @@ class _LoginState extends State<Login> {
               ),
               if (_errorMessage != null)
                 Padding(
-                  padding: const EdgeInsets.only(top: 10.0),
+                  padding: const EdgeInsets.only(top: 16.0),
                   child: Text(
                     _errorMessage!,
                     style: TextStyle(color: Colors.red),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              if (_successMessage != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16.0),
+                  child: Text(
+                    _successMessage!,
+                    style: TextStyle(color: Colors.green),
+                    textAlign: TextAlign.center,
                   ),
                 ),
               const SizedBox(height: 30),
               ElevatedButton(
-                onPressed: isButtonEnabled ? (_isLoading ? null : _login) : null,
+                onPressed: isButtonEnabled ? (_isLoading ? null : _resetPassword) : null,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFE8668),
                   disabledBackgroundColor: const Color(0xFFFE8668).withOpacity(0.6),
@@ -267,7 +231,7 @@ class _LoginState extends State<Login> {
                 child: _isLoading 
                   ? CircularProgressIndicator(color: Colors.white)
                   : Text(
-                      'LOGIN',
+                      'RESET PASSWORD',
                       style: GoogleFonts.poppins(
                         color: Colors.white,
                         fontSize: 18,
@@ -278,49 +242,18 @@ class _LoginState extends State<Login> {
               const SizedBox(height: 20),
               GestureDetector(
                 onTap: () {
-                  Navigator.push(
+                  Navigator.pushReplacement(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ForgotPassword(userType: widget.userType),
+                      builder: (context) => Login(userType: widget.userType),
                     ),
                   );
                 },
                 child: Text(
-                  'Forgot Password?',
+                  'Back to Login',
                   style: GoogleFonts.poppins(
                     color: Colors.black54,
                     fontSize: 16,
-                  ),
-                ),
-              ),
-              const Spacer(),
-              Padding(
-                padding: const EdgeInsets.only(bottom: 30.0),
-                child: RichText(
-                  text: TextSpan(
-                    style: GoogleFonts.poppins(
-                      fontSize: 16,
-                      color: Colors.black54,
-                    ),
-                    children: [
-                      const TextSpan(text: "Don't have an account? "),
-                      TextSpan(
-                        text: 'Sign Up',
-                        style: GoogleFonts.poppins(
-                          color: Colors.black87,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        recognizer: TapGestureRecognizer()
-                          ..onTap = () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => SignIn(userType: widget.userType),
-                              ),
-                            );
-                          },
-                      ),
-                    ],
                   ),
                 ),
               ),
@@ -330,4 +263,4 @@ class _LoginState extends State<Login> {
       ),
     );
   }
-}
+} 

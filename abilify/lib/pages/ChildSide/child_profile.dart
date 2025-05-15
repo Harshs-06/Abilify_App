@@ -7,6 +7,7 @@ import 'package:abilify/pages/login.dart';
 import 'package:abilify/pages/ChildSide/edit_profile.dart';
 import 'package:abilify/pages/ChildSide/notification_preferences.dart';
 import 'package:abilify/pages/ChildSide/parent_controls.dart';
+import 'package:abilify/pages/ParentSide/parent_home_page.dart';
 import 'package:abilify/services/user_data_provider.dart';
 import 'package:abilify/services/auth_service.dart';
 
@@ -339,6 +340,20 @@ class _ChildProfileState extends State<ChildProfile> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(builder: (context) => ParentControls()),
+                        );
+                      },
+                    ),
+                    
+                    SettingItem(
+                      title: 'Switch to Parent Mode',
+                      iconData: Icons.swap_horiz,
+                      backgroundColor: Colors.purple.shade50,
+                      iconColor: Color(0xFF9471E1),
+                      textColor: Color(0xFF9471E1),
+                      onTap: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => const ParentHomePage()),
                         );
                       },
                     ),
