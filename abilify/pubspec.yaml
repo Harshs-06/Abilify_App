@@ -55,7 +55,6 @@ dependencies:
   firebase_auth: ^4.13.0
   google_sign_in: ^6.1.0  
 
-
   audioplayers: ^6.0.0
 
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:abilify/pages/continue_as.dart';
+// import 'package:abilify/pages/continue_as.dart';
+import 'package:abilify/pages/ParentSide/parent_home_page.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -46,7 +47,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     _controller.forward().then((_) {
       Future.delayed(const Duration(milliseconds: 1000), () {
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => ContinueAs()),
+          MaterialPageRoute(builder: (_) =>  ParentHomePage()),
         );
       });
     });
